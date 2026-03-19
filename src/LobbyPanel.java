@@ -6,6 +6,7 @@ public class LobbyPanel extends JPanel {
     CardLayout areaLayout;
     JPanel areaContainer;
     DialogueUI dialogueUI;
+    JPanel inputBlocker;
 
     public LobbyPanel() {
 
@@ -17,6 +18,21 @@ public class LobbyPanel extends JPanel {
         areaLayout = new CardLayout();
         areaContainer = new JPanel(areaLayout);
 
+        inputBlocker = new JPanel();
+        inputBlocker.setLayout(null);
+        inputBlocker.setOpaque(false);
+        inputBlocker.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
+        inputBlocker.setVisible(false);
+        inputBlocker.addMouseListener(new java.awt.event.MouseAdapter() {});
+
+        dialogueUI.setVisibilityListener(visible -> {
+            inputBlocker.setVisible(visible);
+            setButtonsEnabled(areaContainer, !visible);
+            MainGame.getInstance().setHudEnabled(!visible);
+            areaContainer.revalidate();
+            areaContainer.repaint();
+        });
+
         JPanel lobbyPartA = createLobbyPartA();
         JPanel lobbyPartB = createLobbyPartB();
         JPanel lobbyPartC = createLobbyPartC();
@@ -26,15 +42,31 @@ public class LobbyPanel extends JPanel {
         areaContainer.add(lobbyPartB, "B");
         areaContainer.add(lobbyPartC, "C");
         areaContainer.add(lobbyPartD, "D");
-        areaContainer.setBounds(0, 0, 900, 600); // Back to full height
+        areaContainer.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
         // Add components: dialogueUI is on top (index 0)
         add(dialogueUI, 0);
-        add(areaContainer, 1);
+        add(inputBlocker, 1);
+        add(areaContainer, 2);
+    }
+
+    private void setButtonsEnabled(Container root, boolean enabled) {
+        for (Component c : root.getComponents()) {
+            if (c instanceof AbstractButton) {
+                c.setEnabled(enabled);
+            }
+            if (c instanceof Container) {
+                setButtonsEnabled((Container) c, enabled);
+            }
+        }
     }
 
     private void startDialogue(String[] dialogue) {
         dialogueUI.startDialogue(dialogue);
+    }
+
+    private void startDialogue(String[] dialogue, Runnable onComplete) {
+        dialogueUI.startDialogue(dialogue, onComplete);
     }
 
     private void showInteractionMenu(String title, Runnable talkAction, Runnable examineAction) {
@@ -43,6 +75,50 @@ public class LobbyPanel extends JPanel {
 
     private void typeText(String text) {
         dialogueUI.typeText(text);
+    }
+
+    private JLabel createScaledIconLabel(String imagePath, int baseX, int baseY, int baseW, int baseH) {
+        ImageIcon icon = resizeIcon(imagePath, UiScale.s(baseW), UiScale.s(baseH));
+        JLabel label = new JLabel(icon);
+        label.setBounds(UiScale.x(baseX), UiScale.y(baseY), icon.getIconWidth(), icon.getIconHeight());
+        return label;
+    }
+
+    private JButton createArrowButton(String arrowImagePath, int baseX, int baseY, int baseSize) {
+        ImageIcon normalIcon = resizeIcon(arrowImagePath, UiScale.s(baseSize), UiScale.s(baseSize));
+        ImageIcon hoverIcon = resizeIcon(arrowImagePath, UiScale.s(baseSize + 8), UiScale.s(baseSize + 8));
+        JButton btn = new JButton(normalIcon);
+        btn.setBounds(UiScale.x(baseX), UiScale.y(baseY), normalIcon.getIconWidth(), normalIcon.getIconHeight());
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setFocusPainted(false);
+        btn.setOpaque(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.putClientProperty("normalIcon", normalIcon);
+        btn.putClientProperty("hoverIcon", hoverIcon);
+        btn.putClientProperty("origBounds", btn.getBounds());
+
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                if (!btn.isEnabled()) return;
+                Rectangle orig = (Rectangle) btn.getClientProperty("origBounds");
+                ImageIcon hi = (ImageIcon) btn.getClientProperty("hoverIcon");
+                btn.setIcon(hi);
+                int dx = (hi.getIconWidth() - orig.width) / 2;
+                int dy = (hi.getIconHeight() - orig.height) / 2;
+                btn.setBounds(orig.x - dx, orig.y - dy, hi.getIconWidth(), hi.getIconHeight());
+                btn.repaint();
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                Rectangle orig = (Rectangle) btn.getClientProperty("origBounds");
+                ImageIcon ni = (ImageIcon) btn.getClientProperty("normalIcon");
+                btn.setIcon(ni);
+                btn.setBounds(orig);
+                btn.repaint();
+            }
+        });
+        return btn;
     }
 
     private ImageIcon resizeIcon(String path, int width, int height) {
@@ -57,9 +133,7 @@ public class LobbyPanel extends JPanel {
         BackgroundPanel panel = new BackgroundPanel("src/images/lobbyA.jpg");
 
         // Mrs. Vale (Front Desk Clerk)
-        ImageIcon npcIcon = resizeIcon("src/images/msAngela.png", 200, 300);
-        JLabel mrsVale = new JLabel(npcIcon);
-        mrsVale.setBounds(350, 120, 200, 300);
+        JLabel mrsVale = createScaledIconLabel("src/images/receptionist.png", 380, 160, 100, 130);
         panel.add(mrsVale);
 
         mrsVale.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -73,13 +147,7 @@ public class LobbyPanel extends JPanel {
                                 "Mrs. Vale: I found some photos of him, but they are all mixed up.",
                                 "Mrs. Vale: If you can help me sort these files, I'll let you keep the photos."
                             };
-                            startDialogue(dialogue);
-                            
-                            Timer puzzleTimer = new Timer(3000, e -> {
-                                MainGame.getInstance().openPuzzle("Dr. Kells photo", "LOBBY");
-                            });
-                            puzzleTimer.setRepeats(false);
-                            puzzleTimer.start();
+                            startDialogue(dialogue, () -> MainGame.getInstance().openPuzzle("Dr. Kells photo", "LOBBY"));
                         } else {
                             startDialogue(new String[]{"Mrs. Vale: I hope those photos help with your investigation, detective."});
                         }
@@ -101,21 +169,18 @@ public class LobbyPanel extends JPanel {
             }
         });
 
-        JButton rightArrow = new JButton(">");
-        rightArrow.setBounds(820, 250, 50, 50);
+        JButton rightArrow = createArrowButton("src/images/rightArrow.png", 820, 250, 50);
         panel.add(rightArrow);
 
-        JButton downArrow = new JButton("v");
-        downArrow.setBounds(425, 520, 50, 50);
+        JButton downArrow = createArrowButton("src/images/downArrow.png", 425, 520, 50);
         panel.add(downArrow);
 
-        JButton upArrow = new JButton("^");
-        upArrow.setBounds(425, 20, 50, 50);
+        JButton upArrow = createArrowButton("src/images/upArrow.png", 425, 20, 50);
         panel.add(upArrow);
 
         // Mirror Interaction
         JLabel mirror = new JLabel();
-        mirror.setBounds(100, 100, 100, 200);
+        mirror.setBounds(UiScale.x(100), UiScale.y(100), UiScale.s(100), UiScale.s(200));
         mirror.setBorder(BorderFactory.createDashedBorder(Color.GRAY));
         panel.add(mirror);
         mirror.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -156,9 +221,7 @@ public class LobbyPanel extends JPanel {
         BackgroundPanel panel = new BackgroundPanel("src/images/partc-background.jpg");
 
         // Broken Clock
-        ImageIcon clockIcon = resizeIcon("src/images/clock.png", 100, 100);
-        JLabel clock = new JLabel(clockIcon);
-        clock.setBounds(200, 50, 100, 100);
+        JLabel clock = createScaledIconLabel("src/images/clock.png", 200, 50, 100, 100);
         panel.add(clock);
         clock.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -184,9 +247,7 @@ public class LobbyPanel extends JPanel {
         });
 
         // Forgotten Suitcase
-        ImageIcon suitcaseIcon = resizeIcon("src/images/suitcase.png", 150, 100);
-        JLabel suitcase = new JLabel(suitcaseIcon);
-        suitcase.setBounds(600, 400, 150, 100);
+        JLabel suitcase = createScaledIconLabel("src/images/suitcase.png", 600, 400, 150, 100);
         panel.add(suitcase);
         suitcase.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -212,9 +273,7 @@ public class LobbyPanel extends JPanel {
         });
 
         // Portrait of Mr. Blackwood
-        ImageIcon portraitIcon = resizeIcon("src/images/portrait.png", 100, 150);
-        JLabel portrait = new JLabel(portraitIcon);
-        portrait.setBounds(400, 100, 100, 150);
+        JLabel portrait = createScaledIconLabel("src/images/portrait.png", 400, 100, 100, 150);
         panel.add(portrait);
         portrait.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -239,8 +298,7 @@ public class LobbyPanel extends JPanel {
             }
         });
 
-        JButton upArrow = new JButton("^");
-        upArrow.setBounds(425, 20, 50, 50);
+        JButton upArrow = createArrowButton("src/images/upArrow.png", 425, 20, 50);
         panel.add(upArrow);
         upArrow.addActionListener(e -> {
             areaLayout.show(areaContainer, "A");
@@ -253,9 +311,9 @@ public class LobbyPanel extends JPanel {
         BackgroundPanel panel = new BackgroundPanel("src/images/partd-background.jpg");
 
         // Guest Register
-        ImageIcon registerIcon = resizeIcon("src/images/guest-register.png", 200, 100);
+        ImageIcon registerIcon = resizeIcon("src/images/guest-register.png", UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
         JLabel register = new JLabel(registerIcon);
-        register.setBounds(350, 300, 200, 100);
+        register.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
         panel.add(register);
         register.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -280,9 +338,9 @@ public class LobbyPanel extends JPanel {
             }
         });
 
-        JButton downArrow = new JButton("v");
-        downArrow.setBounds(425, 520, 50, 50);
+        JButton downArrow = createArrowButton("src/images/downArrow.png", 425, 520, 50);
         panel.add(downArrow);
+        panel.setComponentZOrder(downArrow, 0);
         downArrow.addActionListener(e -> {
             areaLayout.show(areaContainer, "A");
         });
@@ -295,9 +353,7 @@ public class LobbyPanel extends JPanel {
         BackgroundPanel panel = new BackgroundPanel("src/images/lobbyB.jpg");
 
         // Liam (Bellboy)
-        ImageIcon npcIcon = resizeIcon("src/images/gusion.png", 200, 300);
-        JLabel liam = new JLabel(npcIcon);
-        liam.setBounds(350, 120, 200, 300);
+        JLabel liam = createScaledIconLabel("src/images/gusion.png", 350, 120, 200, 300);
         panel.add(liam);
 
         liam.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -338,7 +394,7 @@ public class LobbyPanel extends JPanel {
 
         // Elevator Button
         JButton elevatorButton = new JButton("Elevator");
-        elevatorButton.setBounds(650, 250, 100, 50);
+        elevatorButton.setBounds(UiScale.x(650), UiScale.y(250), UiScale.s(100), UiScale.s(50));
         panel.add(elevatorButton);
         elevatorButton.addActionListener(e -> {
              if (GameState.getInstance().lobbyComplete) {
@@ -348,8 +404,7 @@ public class LobbyPanel extends JPanel {
              }
          });
 
-        JButton leftArrow = new JButton("<");
-        leftArrow.setBounds(30, 250, 50, 50);
+        JButton leftArrow = createArrowButton("src/images/leftArrow.png", 30, 250, 50);
         panel.add(leftArrow);
 
         leftArrow.addActionListener(e -> {

@@ -9,6 +9,7 @@ public class CluePuzzlePanel extends JPanel {
     private ArrayList<Integer> numbers;
     private JPanel numbersPanel;
     private JLabel instructionLabel;
+    private boolean solved;
 
     public CluePuzzlePanel() {
         setLayout(new BorderLayout());
@@ -16,32 +17,48 @@ public class CluePuzzlePanel extends JPanel {
 
         instructionLabel = new JLabel("Sort the numbers in ascending order (Smallest to Largest)", SwingConstants.CENTER);
         instructionLabel.setForeground(Color.WHITE);
-        instructionLabel.setFont(new Font("Serif", Font.BOLD, 20));
-        instructionLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        instructionLabel.setFont(new Font("Serif", Font.BOLD, UiScale.font(20)));
+        instructionLabel.setBorder(BorderFactory.createEmptyBorder(UiScale.s(20), UiScale.s(10), UiScale.s(20), UiScale.s(10)));
         add(instructionLabel, BorderLayout.NORTH);
 
-        numbersPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 50));
+        numbersPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, UiScale.s(20), UiScale.s(50)));
         numbersPanel.setOpaque(false);
         add(numbersPanel, BorderLayout.CENTER);
 
-        JButton checkButton = new JButton("Verify Sequence");
-        checkButton.setFont(new Font("Serif", Font.BOLD, 18));
-        checkButton.addActionListener(e -> verifySort());
-        
         JPanel southPanel = new JPanel();
         southPanel.setOpaque(false);
-        southPanel.add(checkButton);
+
+        JButton backButton = new JButton("Back");
+        backButton.setFont(new Font("Serif", Font.BOLD, UiScale.font(18)));
+        backButton.addActionListener(e -> {
+            if (returnFloor != null) {
+                MainGame.getInstance().switchFloor(returnFloor);
+            } else {
+                MainGame.getInstance().switchFloor("LOBBY");
+            }
+        });
+        southPanel.add(backButton);
+
         add(southPanel, BorderLayout.SOUTH);
     }
 
     public void startPuzzle(String clue, String returnTo) {
         this.clueToAward = clue;
         this.returnFloor = returnTo;
+        this.solved = false;
+        instructionLabel.setText("Sort the numbers in ascending order (Smallest to Largest)");
         
         // Generate random numbers
         numbers = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            numbers.add((int) (Math.random() * 100));
+        while (numbers.size() < 5) {
+            int v = (int) (Math.random() * 100);
+            if (!numbers.contains(v)) numbers.add(v);
+        }
+
+        int guard = 0;
+        while (isSorted() && guard < 25) {
+            Collections.shuffle(numbers);
+            guard++;
         }
         
         refreshUI();
@@ -52,11 +69,12 @@ public class CluePuzzlePanel extends JPanel {
         for (int i = 0; i < numbers.size(); i++) {
             final int index = i;
             JButton numBtn = new JButton(String.valueOf(numbers.get(i)));
-            numBtn.setPreferredSize(new Dimension(80, 80));
-            numBtn.setFont(new Font("Monospaced", Font.BOLD, 24));
+            numBtn.setPreferredSize(new Dimension(UiScale.s(80), UiScale.s(80)));
+            numBtn.setFont(new Font("Monospaced", Font.BOLD, UiScale.font(24)));
             
             // Simple swap logic for the dummy game
             numBtn.addActionListener(e -> {
+                if (solved) return;
                 if (index < numbers.size() - 1) {
                     Collections.swap(numbers, index, index + 1);
                     refreshUI();
@@ -70,23 +88,32 @@ public class CluePuzzlePanel extends JPanel {
         }
         numbersPanel.revalidate();
         numbersPanel.repaint();
+
+        if (!solved && isSorted()) {
+            onSolved();
+        }
     }
 
-    private void verifySort() {
-        boolean sorted = true;
+    private boolean isSorted() {
         for (int i = 0; i < numbers.size() - 1; i++) {
             if (numbers.get(i) > numbers.get(i + 1)) {
-                sorted = false;
-                break;
+                return false;
             }
         }
+        return true;
+    }
 
-        if (sorted) {
-            JOptionPane.showMessageDialog(this, "Correct! You've uncovered the clue: " + clueToAward);
+    private void onSolved() {
+        solved = true;
+        if (clueToAward != null && !clueToAward.isBlank()) {
             GameState.getInstance().addClue(clueToAward);
-            MainGame.getInstance().switchFloor(returnFloor);
-        } else {
-            JOptionPane.showMessageDialog(this, "The sequence is still out of order. Try swapping numbers!");
         }
+        instructionLabel.setText("Correct! Clue added. Returning...");
+        for (Component c : numbersPanel.getComponents()) {
+            if (c instanceof JButton) ((JButton) c).setEnabled(false);
+        }
+        Timer t = new Timer(900, e -> MainGame.getInstance().switchFloor(returnFloor));
+        t.setRepeats(false);
+        t.start();
     }
 }

@@ -5,6 +5,7 @@ public class GameState {
     
     public int currentFloor;
     public ArrayList<String> clues;
+    private ArrayList<Runnable> listeners;
     
     // Floor completion status
     public boolean lobbyComplete;
@@ -19,6 +20,7 @@ public class GameState {
     private GameState() {
         currentFloor = 0; // 0 = Lobby
         clues = new ArrayList<>();
+        listeners = new ArrayList<>();
         lobbyComplete = false;
         floor1Complete = false;
         floor2Complete = false;
@@ -36,6 +38,29 @@ public class GameState {
         return instance;
     }
 
+    public void addListener(Runnable listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(Runnable listener) {
+        listeners.remove(listener);
+    }
+
+    private void notifyListeners() {
+        for (Runnable r : new ArrayList<>(listeners)) {
+            r.run();
+        }
+    }
+
+    public void setCurrentFloor(int floor) {
+        if (currentFloor != floor) {
+            currentFloor = floor;
+            notifyListeners();
+        }
+    }
+
     public void addClue(String clue) {
         if (!clues.contains(clue)) {
             clues.add(clue);
@@ -48,6 +73,7 @@ public class GameState {
                 clues.contains("Mirror reflection hint")) {
                 lobbyComplete = true;
             }
+            notifyListeners();
         }
     }
 
