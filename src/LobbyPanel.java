@@ -353,7 +353,7 @@ public class LobbyPanel extends JPanel {
         BackgroundPanel panel = new BackgroundPanel("src/images/lobbyB.jpg");
 
         // Liam (Bellboy)
-        JLabel liam = createScaledIconLabel("src/images/gusion.png", 350, 120, 200, 300);
+        JLabel liam = createScaledIconLabel("src/images/liam.png", 130, 230, 170, 280);
         panel.add(liam);
 
         liam.addMouseListener(new java.awt.event.MouseAdapter() {
