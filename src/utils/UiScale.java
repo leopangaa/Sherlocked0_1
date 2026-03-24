@@ -1,3 +1,5 @@
+package utils;
+
 public final class UiScale {
     public static final int BASE_WIDTH = 900;
     public static final int BASE_HEIGHT = 600;

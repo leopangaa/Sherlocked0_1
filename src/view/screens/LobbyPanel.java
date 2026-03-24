@@ -1,3 +1,12 @@
+package view.screens;
+
+import core.GameState;
+import main.MainGame;
+import utils.Assets;
+import utils.UiScale;
+import view.components.BackgroundPanel;
+import view.components.DialogueUI;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -130,10 +139,10 @@ public class LobbyPanel extends JPanel {
 
     private JPanel createLobbyPartA() {
 
-        BackgroundPanel panel = new BackgroundPanel("src/images/lobbyA.jpg");
+        BackgroundPanel panel = new BackgroundPanel(Assets.img("lobbyA.jpg"));
 
         // Mrs. Vale (Front Desk Clerk)
-        JLabel mrsVale = createScaledIconLabel("src/images/receptionist.png", 380, 160, 100, 130);
+        JLabel mrsVale = createScaledIconLabel(Assets.img("receptionist.png"), 380, 160, 100, 130);
         panel.add(mrsVale);
 
         mrsVale.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -169,13 +178,13 @@ public class LobbyPanel extends JPanel {
             }
         });
 
-        JButton rightArrow = createArrowButton("src/images/rightArrow.png", 820, 250, 50);
+        JButton rightArrow = createArrowButton(Assets.img("rightArrow.png"), 820, 250, 50);
         panel.add(rightArrow);
 
-        JButton downArrow = createArrowButton("src/images/downArrow.png", 425, 520, 50);
+        JButton downArrow = createArrowButton(Assets.img("downArrow.png"), 425, 520, 50);
         panel.add(downArrow);
 
-        JButton upArrow = createArrowButton("src/images/upArrow.png", 425, 20, 50);
+        JButton upArrow = createArrowButton(Assets.img("upArrow.png"), 425, 20, 50);
         panel.add(upArrow);
 
         // Mirror Interaction
@@ -218,10 +227,10 @@ public class LobbyPanel extends JPanel {
     }
 
     private JPanel createLobbyPartC() {
-        BackgroundPanel panel = new BackgroundPanel("src/images/partc-background.jpg");
+        BackgroundPanel panel = new BackgroundPanel(Assets.img("partc-background.jpg"));
 
         // Broken Clock
-        JLabel clock = createScaledIconLabel("src/images/clock.png", 200, 50, 100, 100);
+        JLabel clock = createScaledIconLabel(Assets.img("clock.png"), 200, 50, 100, 100);
         panel.add(clock);
         clock.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -247,7 +256,7 @@ public class LobbyPanel extends JPanel {
         });
 
         // Forgotten Suitcase
-        JLabel suitcase = createScaledIconLabel("src/images/suitcase.png", 600, 400, 150, 100);
+        JLabel suitcase = createScaledIconLabel(Assets.img("suitcase.png"), 600, 400, 150, 100);
         panel.add(suitcase);
         suitcase.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -273,7 +282,7 @@ public class LobbyPanel extends JPanel {
         });
 
         // Portrait of Mr. Blackwood
-        JLabel portrait = createScaledIconLabel("src/images/portrait.png", 400, 100, 100, 150);
+        JLabel portrait = createScaledIconLabel(Assets.img("portrait.png"), 400, 100, 100, 150);
         panel.add(portrait);
         portrait.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -298,7 +307,7 @@ public class LobbyPanel extends JPanel {
             }
         });
 
-        JButton upArrow = createArrowButton("src/images/upArrow.png", 425, 20, 50);
+        JButton upArrow = createArrowButton(Assets.img("upArrow.png"), 425, 20, 50);
         panel.add(upArrow);
         upArrow.addActionListener(e -> {
             areaLayout.show(areaContainer, "A");
@@ -308,10 +317,10 @@ public class LobbyPanel extends JPanel {
     }
 
     private JPanel createLobbyPartD() {
-        BackgroundPanel panel = new BackgroundPanel("src/images/partd-background.jpg");
+        BackgroundPanel panel = new BackgroundPanel(Assets.img("partd-background.jpg"));
 
         // Guest Register
-        ImageIcon registerIcon = resizeIcon("src/images/guest-register.png", UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
+        ImageIcon registerIcon = resizeIcon(Assets.img("guest-register.png"), UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
         JLabel register = new JLabel(registerIcon);
         register.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
         panel.add(register);
@@ -338,7 +347,7 @@ public class LobbyPanel extends JPanel {
             }
         });
 
-        JButton downArrow = createArrowButton("src/images/downArrow.png", 425, 520, 50);
+        JButton downArrow = createArrowButton(Assets.img("downArrow.png"), 425, 520, 50);
         panel.add(downArrow);
         panel.setComponentZOrder(downArrow, 0);
         downArrow.addActionListener(e -> {
@@ -350,10 +359,10 @@ public class LobbyPanel extends JPanel {
 
     private JPanel createLobbyPartB() {
 
-        BackgroundPanel panel = new BackgroundPanel("src/images/lobbyB.jpg");
+        BackgroundPanel panel = new BackgroundPanel(Assets.img("lobbyB.jpg"));
 
         // Liam (Bellboy)
-        JLabel liam = createScaledIconLabel("src/images/liam.png", 130, 230, 170, 280);
+        JLabel liam = createScaledIconLabel(Assets.img("liam.png"), 130, 230, 170, 280);
         panel.add(liam);
 
         liam.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -404,7 +413,7 @@ public class LobbyPanel extends JPanel {
              }
          });
 
-        JButton leftArrow = createArrowButton("src/images/leftArrow.png", 30, 250, 50);
+        JButton leftArrow = createArrowButton(Assets.img("leftArrow.png"), 30, 250, 50);
         panel.add(leftArrow);
 
         leftArrow.addActionListener(e -> {

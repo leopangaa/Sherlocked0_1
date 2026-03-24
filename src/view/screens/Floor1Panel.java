@@ -1,3 +1,11 @@
+package view.screens;
+
+import main.MainGame;
+import utils.Assets;
+import utils.UiScale;
+import view.components.BackgroundPanel;
+import view.components.DialogueUI;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -75,10 +83,10 @@ public class Floor1Panel extends JPanel {
     }
 
     private JPanel createHallway() {
-        BackgroundPanel panel = new BackgroundPanel("src/images/lobbyA.jpg"); // Placeholder
+        BackgroundPanel panel = new BackgroundPanel(Assets.img("lobbyA.jpg")); // Placeholder
 
         // Ms. Harper
-        ImageIcon npcIcon = resizeIcon("src/images/msAngela.png", UiScale.s(200), UiScale.s(300)); // Placeholder
+        ImageIcon npcIcon = resizeIcon(Assets.img("msAngela.png"), UiScale.s(200), UiScale.s(300)); // Placeholder
         JLabel msHarper = new JLabel(npcIcon);
         msHarper.setBounds(UiScale.x(200), UiScale.y(120), UiScale.s(200), UiScale.s(300));
         panel.add(msHarper);
@@ -104,10 +112,10 @@ public class Floor1Panel extends JPanel {
     }
 
     private JPanel createRoom217() {
-        BackgroundPanel panel = new BackgroundPanel("src/images/lobbyB.jpg"); // Placeholder
+        BackgroundPanel panel = new BackgroundPanel(Assets.img("lobbyB.jpg")); // Placeholder
 
         // Mr. Doyle
-        ImageIcon npcIcon = resizeIcon("src/images/gusion.png", UiScale.s(200), UiScale.s(300)); // Placeholder
+        ImageIcon npcIcon = resizeIcon(Assets.img("gusion.png"), UiScale.s(200), UiScale.s(300)); // Placeholder
         JLabel mrDoyle = new JLabel(npcIcon);
         mrDoyle.setBounds(UiScale.x(400), UiScale.y(120), UiScale.s(200), UiScale.s(300));
         panel.add(mrDoyle);

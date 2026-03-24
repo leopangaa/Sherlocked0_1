@@ -1,3 +1,9 @@
+package view.screens;
+
+import core.GameState;
+import main.MainGame;
+import utils.UiScale;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;

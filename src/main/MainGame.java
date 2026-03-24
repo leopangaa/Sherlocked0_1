@@ -1,3 +1,15 @@
+package main;
+
+import controller.MusicPlayer;
+import core.GameState;
+import utils.Assets;
+import utils.UiScale;
+import view.components.GameHud;
+import view.screens.CluePuzzlePanel;
+import view.screens.Floor1Panel;
+import view.screens.InventoryPanel;
+import view.screens.LobbyPanel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -52,7 +64,7 @@ public class MainGame {
         frame.setVisible(true);
 
         GameState.getInstance().setCurrentFloor(0);
-        musicPlayer.playLoop("src/audio/lobby.wav");
+        musicPlayer.playLoop(Assets.audio("lobby.wav"));
         musicPlayer.setVolume(0.75f);
 
         installGlobalKeybinds();
@@ -124,10 +136,10 @@ public class MainGame {
         setHudEnabled(true);
         if ("LOBBY".equals(floorName)) {
             GameState.getInstance().setCurrentFloor(0);
-            musicPlayer.playLoop("src/audio/lobby.wav");
+            musicPlayer.playLoop(Assets.audio("lobby.wav"));
         } else if ("FLOOR1".equals(floorName)) {
             GameState.getInstance().setCurrentFloor(1);
-            musicPlayer.playLoop("src/audio/floor1.wav");
+            musicPlayer.playLoop(Assets.audio("floor1.wav"));
         }
     }
 

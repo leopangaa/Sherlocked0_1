@@ -1,3 +1,10 @@
+package view.components;
+
+import core.GameState;
+import main.MainGame;
+import utils.Assets;
+import utils.UiScale;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -12,7 +19,7 @@ public class GameHud extends JPanel {
         setOpaque(false);
         setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
-        ImageIcon invIcon = new ImageIcon("src/images/inventoryIcon.png");
+        ImageIcon invIcon = new ImageIcon(Assets.img("inventoryIcon.png"));
         Image invImg = invIcon.getImage().getScaledInstance(UiScale.s(52), UiScale.s(52), Image.SCALE_SMOOTH);
         inventoryButton = new JButton(new ImageIcon(invImg));
         inventoryButton.setBounds(UiScale.x(20), UiScale.y(20), UiScale.s(52), UiScale.s(52));
@@ -29,7 +36,7 @@ public class GameHud extends JPanel {
         int panelX = UiScale.GAME_WIDTH - UiScale.x(20) - panelW;
         int panelY = UiScale.y(10);
 
-        ImageIcon objectivesIcon = new ImageIcon("src/images/objectives.png");
+        ImageIcon objectivesIcon = new ImageIcon(Assets.img("objectives.png"));
         Image objectivesImg = objectivesIcon.getImage().getScaledInstance(panelW, panelH, Image.SCALE_SMOOTH);
         JLabel objectivesBg = new JLabel(new ImageIcon(objectivesImg));
         objectivesBg.setBounds(0, 0, panelW, panelH);

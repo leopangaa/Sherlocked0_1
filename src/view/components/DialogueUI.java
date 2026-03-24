@@ -1,3 +1,8 @@
+package view.components;
+
+import utils.Assets;
+import utils.UiScale;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.function.Consumer;
@@ -6,8 +11,8 @@ public class DialogueUI extends JPanel {
 
     private static final Color PANEL_BG = new Color(25, 30, 44);
     private static final Color PANEL_BORDER = new Color(90, 100, 125);
-    private static final String TALK_BTN_PATH = "src/images/talkButton.png";
-    private static final String EXAMINE_BTN_PATH = "src/images/examineButton.png";
+    private static final String TALK_BTN_PATH = Assets.img("talkButton.png");
+    private static final String EXAMINE_BTN_PATH = Assets.img("examineButton.png");
 
     private JTextArea dialogueBox;
     private JButton talkBtn, examineBtn;
