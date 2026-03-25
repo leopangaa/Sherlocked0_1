@@ -227,36 +227,40 @@ public class LobbyPanel extends JPanel {
     }
 
     private JPanel createLobbyPartC() {
-        BackgroundPanel panel = new BackgroundPanel(Assets.img("partc-background.jpg"));
+        BackgroundPanel panel = new BackgroundPanel(Assets.img("lobbyC.jpg"));
 
-        // Broken Clock
-        JLabel clock = createScaledIconLabel(Assets.img("clock.png"), 200, 50, 100, 100);
+        // Broken Clock (invisible hotspot)
+        JButton clock = new JButton();
+        clock.setBounds(UiScale.x(650), UiScale.y(25), UiScale.s(90), UiScale.s(90));
+        clock.setBorderPainted(false);
+        clock.setContentAreaFilled(false);
+        clock.setFocusPainted(false);
+        clock.setOpaque(false);
         panel.add(clock);
+
+        clock.addActionListener(e -> showInteractionMenu("BROKEN CLOCK", null, () -> {
+            String[] dialogue = {
+                "The clock is frozen at 11:45.",
+                "Wait, the second hand is moving backwards.",
+                "Tick... Tock... Tick... Tock...",
+                "A chilling whisper fills your ears: 'TIME IS RUNNING OUT, DETECTIVE.'"
+            };
+            startDialogue(dialogue);
+            GameState.getInstance().addClue("Frozen Clock hint");
+        }));
+
         clock.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                showInteractionMenu("BROKEN CLOCK", null, () -> {
-                    String[] dialogue = {
-                        "The clock is frozen at 11:45.",
-                        "Wait, the second hand is moving backwards.",
-                        "Tick... Tock... Tick... Tock...",
-                        "A chilling whisper fills your ears: 'TIME IS RUNNING OUT, DETECTIVE.'"
-                    };
-                    startDialogue(dialogue);
-                    GameState.getInstance().addClue("Frozen Clock hint");
-                });
-            }
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 clock.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                clock.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 100), 2));
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 clock.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                clock.setBorder(null);
             }
         });
+        panel.setComponentZOrder(clock, 0);
 
         // Forgotten Suitcase
-        JLabel suitcase = createScaledIconLabel(Assets.img("suitcase.png"), 600, 400, 150, 100);
+        JLabel suitcase = createScaledIconLabel(Assets.img("suitcase.png"), 208, 358, 145, 75);
         panel.add(suitcase);
         suitcase.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -278,32 +282,6 @@ public class LobbyPanel extends JPanel {
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 suitcase.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 suitcase.setBorder(null);
-            }
-        });
-
-        // Portrait of Mr. Blackwood
-        JLabel portrait = createScaledIconLabel(Assets.img("portrait.png"), 400, 100, 100, 150);
-        panel.add(portrait);
-        portrait.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                showInteractionMenu("PORTRAIT", null, () -> {
-                    String[] dialogue = {
-                        "A portrait of the hotel's owner, Mr. Blackwood.",
-                        "His eyes seem to follow you across the room.",
-                        "The plaque underneath reads: 'THE TRUTH IS HIDDEN BENEATH THE SURFACE.'",
-                        "You notice a faint scratch on the frame."
-                    };
-                    startDialogue(dialogue);
-                    GameState.getInstance().addClue("Owner Portrait hint");
-                });
-            }
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                portrait.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                portrait.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 100), 2));
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                portrait.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                portrait.setBorder(null);
             }
         });
 

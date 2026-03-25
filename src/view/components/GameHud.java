@@ -31,8 +31,8 @@ public class GameHud extends JPanel {
         inventoryButton.addActionListener(e -> MainGame.getInstance().openInventory());
         add(inventoryButton);
 
-        int panelW = UiScale.s(360);
-        int panelH = UiScale.s(240);
+        int panelW = UiScale.s(280);
+        int panelH = UiScale.s(190);
         int panelX = UiScale.GAME_WIDTH - UiScale.x(20) - panelW;
         int panelY = UiScale.y(10);
 
@@ -51,17 +51,17 @@ public class GameHud extends JPanel {
         objectivesBox.setEditable(false);
         objectivesBox.setLineWrap(true);
         objectivesBox.setWrapStyleWord(true);
-        objectivesBox.setFont(new Font("Serif", Font.PLAIN, UiScale.font(14)));
+        objectivesBox.setFont(new Font("Serif", Font.PLAIN, UiScale.font(12)));
         objectivesBox.setBackground(new Color(0, 0, 0, 0));
         objectivesBox.setOpaque(false);
         objectivesBox.setForeground(new Color(30, 20, 10));
         objectivesBox.setBorder(null);
-        objectivesBox.setMargin(new Insets(UiScale.s(2), UiScale.s(6), UiScale.s(2), UiScale.s(2)));
+        objectivesBox.setMargin(new Insets(UiScale.s(1), UiScale.s(4), UiScale.s(1), UiScale.s(1)));
 
-        int insetX = UiScale.s(68);
-        int insetY = UiScale.s(84);
-        int boxW = panelW - UiScale.s(136);
-        int boxH = panelH - UiScale.s(130);
+        int insetX = (int) Math.round(panelW * 0.19);
+        int insetY = (int) Math.round(panelH * 0.35);
+        int boxW = panelW - (int) Math.round(panelW * 0.38);
+        int boxH = panelH - (int) Math.round(panelH * 0.54);
         objectivesBox.setBounds(insetX, insetY, boxW, boxH);
         objectivesPanel.add(objectivesBox);
         objectivesPanel.setComponentZOrder(objectivesBox, 0);
