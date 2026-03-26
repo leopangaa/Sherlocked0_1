@@ -8,6 +8,8 @@ public class MusicPlayer {
     private FloatControl gainControl;
     private String currentPath;
 
+    private float currentVolume = 1.0f;
+
     public synchronized void playLoop(String path) {
         if (path == null || path.isBlank()) return;
         if (path.equals(currentPath) && clip != null && clip.isRunning()) return;
@@ -22,6 +24,7 @@ public class MusicPlayer {
 
             if (clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
                 gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+                setVolume(currentVolume); // Apply current volume to new clip
             } else {
                 gainControl = null;
             }
@@ -49,12 +52,16 @@ public class MusicPlayer {
     }
 
     public synchronized void setVolume(float volume01) {
+        currentVolume = Math.max(0f, Math.min(1f, volume01));
         if (gainControl == null) return;
-        float v = Math.max(0f, Math.min(1f, volume01));
         float min = gainControl.getMinimum();
         float max = gainControl.getMaximum();
-        float db = min + (max - min) * v;
+        float db = min + (max - min) * currentVolume;
         gainControl.setValue(db);
+    }
+
+    public float getVolume() {
+        return currentVolume;
     }
 
     public synchronized boolean isPlaying() {

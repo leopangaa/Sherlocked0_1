@@ -4,6 +4,7 @@ import controller.MusicPlayer;
 import core.GameState;
 import utils.Assets;
 import utils.UiScale;
+import view.components.GameDialogPanel;
 import view.components.GameHud;
 import view.screens.CluePuzzlePanel;
 import view.screens.Floor1Panel;
@@ -14,6 +15,8 @@ import view.screens.MainMenuPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainGame {
 
@@ -25,6 +28,7 @@ public class MainGame {
     CluePuzzlePanel puzzlePanel;
     InventoryPanel inventoryPanel;
     GameHud hud;
+    GameDialogPanel dialogPanel;
     JLayeredPane root;
     String lastScreen = "MENU";
     boolean inventoryOpen = false;
@@ -35,13 +39,36 @@ public class MainGame {
         instance = this;
 
         frame = new JFrame("Sherlocked");
+        frame.setUndecorated(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // TRUE FULL SCREEN
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        if (gd.isFullScreenSupported()) {
+            gd.setFullScreenWindow(frame);
+        } else {
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            frame.setVisible(true);
+        }
+
         root = new JLayeredPane();
         root.setPreferredSize(new Dimension(UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT));
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        root.setBackground(Color.BLACK);
+        root.setOpaque(true);
 
         cardLayout = new CardLayout();
         container = new JPanel(cardLayout);
-        container.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
+        
+        // We'll center the container in the root if the screen is larger
+        int screenW = gd.getDisplayMode().getWidth();
+        int screenH = gd.getDisplayMode().getHeight();
+        int offsetX = (screenW - UiScale.GAME_WIDTH) / 2;
+        int offsetY = (screenH - UiScale.GAME_HEIGHT) / 2;
+        if (offsetX < 0) offsetX = 0;
+        if (offsetY < 0) offsetY = 0;
+
+        container.setBounds(offsetX, offsetY, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
         MainMenuPanel menu = new MainMenuPanel();
         LobbyPanel lobby = new LobbyPanel();
@@ -49,7 +76,11 @@ public class MainGame {
         puzzlePanel = new CluePuzzlePanel();
         inventoryPanel = new InventoryPanel();
         hud = new GameHud();
-        hud.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
+        hud.setBounds(offsetX, offsetY, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
+
+        dialogPanel = new GameDialogPanel();
+        dialogPanel.setBounds(0, 0, screenW, screenH);
+        dialogPanel.setDialogOffset(offsetX, offsetY);
 
         musicPlayer = new MusicPlayer();
 
@@ -61,12 +92,17 @@ public class MainGame {
 
         root.add(container, JLayeredPane.DEFAULT_LAYER);
         root.add(hud, JLayeredPane.PALETTE_LAYER);
+        root.add(dialogPanel, JLayeredPane.DRAG_LAYER);
 
         frame.setContentPane(root);
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setResizable(false);
-        frame.setVisible(true);
+        
+        // NO PACK/LOCATION IF FULLSCREEN
+        if (frame.getExtendedState() != JFrame.MAXIMIZED_BOTH && !frame.isUndecorated()) {
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setResizable(false);
+            frame.setVisible(true);
+        }
 
         showMenu();
         installGlobalKeybinds();
@@ -77,12 +113,21 @@ public class MainGame {
         ActionMap am = root.getActionMap();
 
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_Q, 0), "toggleInventory");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "openSettings");
 
         am.put("toggleInventory", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 if (!inventoryOpen && !hudEnabled) return;
                 toggleInventory();
+            }
+        });
+
+        am.put("openSettings", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (!hudEnabled) return; // Only in-game
+                openSettings();
             }
         });
     }
@@ -112,96 +157,105 @@ public class MainGame {
     }
 
     public void continueGame() {
-        JOptionPane.showMessageDialog(
-                frame,
-                "No saved game yet.",
-                "Continue",
-                JOptionPane.INFORMATION_MESSAGE
-        );
+        dialogPanel.showMessage("Continue", "No saved game yet.", null);
+    }
+
+    public void openSettings() {
+        dialogPanel.setPanelSize(UiScale.s(400), UiScale.s(300));
+        JPanel settingsMenu = new JPanel(null);
+        settingsMenu.setOpaque(false);
+
+        int btnW = UiScale.s(200);
+        int btnH = UiScale.s(45);
+        int startY = UiScale.s(20);
+        int gap = UiScale.s(20);
+
+        JButton optionsBtn = createMenuButton("Game Options", 0, startY, btnW, btnH);
+        JButton saveExitBtn = createMenuButton("Save and Exit", 0, startY + (btnH + gap), btnW, btnH);
+        JButton quitBtn = createMenuButton("Quit Game", 0, startY + 2 * (btnH + gap), btnW, btnH);
+
+        settingsMenu.add(optionsBtn);
+        settingsMenu.add(saveExitBtn);
+        settingsMenu.add(quitBtn);
+
+        // Center buttons in the custom panel
+        int panelWidth = UiScale.s(500) - UiScale.s(120); // from GameDialogPanel content width
+        optionsBtn.setLocation((panelWidth - btnW) / 2, optionsBtn.getY());
+        saveExitBtn.setLocation((panelWidth - btnW) / 2, saveExitBtn.getY());
+        quitBtn.setLocation((panelWidth - btnW) / 2, quitBtn.getY());
+
+        optionsBtn.addActionListener(e -> openOptions());
+        saveExitBtn.addActionListener(e -> {
+            // Placeholder for save logic
+            dialogPanel.showMessage("Save", "Game saved. Returning to menu...", () -> showMenu());
+        });
+        quitBtn.addActionListener(e -> quitGame());
+
+        dialogPanel.showCustom("Settings", settingsMenu, Arrays.asList("Back"), choice -> {});
+    }
+
+    private JButton createMenuButton(String text, int x, int y, int w, int h) {
+        JButton btn = new JButton(text);
+        btn.setBounds(x, y, w, h);
+        btn.setFont(new Font("Serif", Font.BOLD, UiScale.font(18)));
+        btn.setFocusPainted(false);
+        btn.setBackground(new Color(200, 190, 170));
+        btn.setForeground(new Color(30, 25, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 
     public void openOptions() {
-        JDialog dialog = new JDialog(frame, "Options", true);
-        dialog.setSize(UiScale.w(420), UiScale.h(320));
-        dialog.setLayout(null);
-        dialog.setLocationRelativeTo(frame);
-        dialog.getContentPane().setBackground(new Color(24, 22, 20));
-
-        JLabel title = new JLabel("Game Options");
-        title.setFont(new Font("Serif", Font.BOLD, UiScale.font(24)));
-        title.setForeground(new Color(240, 230, 210));
-        title.setBounds(UiScale.x(120), UiScale.y(20), UiScale.w(200), UiScale.h(30));
-        dialog.add(title);
+        dialogPanel.setPanelSize(UiScale.s(550), UiScale.s(450));
+        JPanel optionsPanel = new JPanel(null);
+        optionsPanel.setOpaque(false);
 
         JLabel volumeLabel = new JLabel("Master Volume");
-        volumeLabel.setForeground(Color.WHITE);
-        volumeLabel.setFont(new Font("Serif", Font.PLAIN, UiScale.font(16)));
-        volumeLabel.setBounds(UiScale.x(40), UiScale.y(70), UiScale.w(120), UiScale.h(25));
-        dialog.add(volumeLabel);
+        volumeLabel.setForeground(new Color(60, 40, 20));
+        volumeLabel.setFont(new Font("Serif", Font.BOLD, UiScale.font(16)));
+        volumeLabel.setBounds(0, UiScale.s(10), UiScale.s(150), UiScale.s(25));
+        optionsPanel.add(volumeLabel);
 
-        JSlider volumeSlider = new JSlider(0, 100, 100);
-        volumeSlider.setBounds(UiScale.x(170), UiScale.y(70), UiScale.w(180), UiScale.h(40));
-        dialog.add(volumeSlider);
+        JSlider volumeSlider = new JSlider(0, 100, (int) (musicPlayer.getVolume() * 100));
+        volumeSlider.setOpaque(false);
+        volumeSlider.setBounds(UiScale.s(160), UiScale.s(10), UiScale.s(200), UiScale.s(40));
+        optionsPanel.add(volumeSlider);
 
         JLabel textSpeedLabel = new JLabel("Text Speed");
-        textSpeedLabel.setForeground(Color.WHITE);
-        textSpeedLabel.setFont(new Font("Serif", Font.PLAIN, UiScale.font(16)));
-        textSpeedLabel.setBounds(UiScale.x(40), UiScale.y(120), UiScale.w(120), UiScale.h(25));
-        dialog.add(textSpeedLabel);
+        textSpeedLabel.setForeground(new Color(60, 40, 20));
+        textSpeedLabel.setFont(new Font("Serif", Font.BOLD, UiScale.font(16)));
+        textSpeedLabel.setBounds(0, UiScale.s(60), UiScale.s(150), UiScale.s(25));
+        optionsPanel.add(textSpeedLabel);
 
         String[] textSpeeds = {"Slow", "Normal", "Fast"};
         JComboBox<String> textSpeedBox = new JComboBox<>(textSpeeds);
         textSpeedBox.setSelectedIndex(1);
-        textSpeedBox.setBounds(UiScale.x(170), UiScale.y(120), UiScale.w(120), UiScale.h(28));
-        dialog.add(textSpeedBox);
+        textSpeedBox.setBounds(UiScale.s(160), UiScale.s(60), UiScale.s(120), UiScale.s(28));
+        optionsPanel.add(textSpeedBox);
 
-        JCheckBox fullscreenBox = new JCheckBox("Fullscreen");
-        fullscreenBox.setForeground(Color.WHITE);
-        fullscreenBox.setBackground(new Color(24, 22, 20));
-        fullscreenBox.setFont(new Font("Serif", Font.PLAIN, UiScale.font(15)));
-        fullscreenBox.setBounds(UiScale.x(40), UiScale.y(170), UiScale.w(120), UiScale.h(25));
-        dialog.add(fullscreenBox);
+        JCheckBox fullscreenBox = new JCheckBox("Fullscreen", true);
+        fullscreenBox.setOpaque(false);
+        fullscreenBox.setForeground(new Color(60, 40, 20));
+        fullscreenBox.setFont(new Font("Serif", Font.BOLD, UiScale.font(16)));
+        fullscreenBox.setBounds(0, UiScale.s(110), UiScale.s(150), UiScale.s(25));
+        optionsPanel.add(fullscreenBox);
 
-        JButton saveButton = new JButton("Save");
-        saveButton.setFont(new Font("Serif", Font.BOLD, UiScale.font(15)));
-        saveButton.setBounds(UiScale.x(90), UiScale.y(230), UiScale.w(100), UiScale.h(35));
-        dialog.add(saveButton);
-
-        JButton backButton = new JButton("Back");
-        backButton.setFont(new Font("Serif", Font.BOLD, UiScale.font(15)));
-        backButton.setBounds(UiScale.x(220), UiScale.y(230), UiScale.w(100), UiScale.h(35));
-        dialog.add(backButton);
-
-        saveButton.addActionListener(e -> {
-            float volume = volumeSlider.getValue() / 100f;
-            musicPlayer.setVolume(volume);
-
-            JOptionPane.showMessageDialog(
-                    dialog,
-                    "Options saved.",
-                    "Saved",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
-            dialog.dispose();
+        List<String> buttons = Arrays.asList("Save", "Back");
+        dialogPanel.showCustom("Game Options", optionsPanel, buttons, choice -> {
+            if (choice == 0) { // Save
+                float volume = volumeSlider.getValue() / 100f;
+                musicPlayer.setVolume(volume);
+                dialogPanel.showMessage("Options", "Options saved.", null);
+            }
         });
-
-        backButton.addActionListener(e -> dialog.dispose());
-
-        dialog.setVisible(true);
     }
 
     public void quitGame() {
-        int confirm = JOptionPane.showConfirmDialog(
-                frame,
-                "Are you sure you want to quit?",
-                "Quit Game",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            System.exit(0);
-        }
+        dialogPanel.showConfirm("Quit Game", "Are you sure you want to quit?", confirmed -> {
+            if (confirmed) {
+                System.exit(0);
+            }
+        });
     }
 
     public void openPuzzle(String clue, String returnTo) {
