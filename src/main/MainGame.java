@@ -65,7 +65,7 @@ public class MainGame {
 
         GameState.getInstance().setCurrentFloor(0);
         musicPlayer.playLoop(Assets.audio("lobby.wav"));
-        musicPlayer.setVolume(0.75f);
+        musicPlayer.setVolume(1f);
 
         installGlobalKeybinds();
     }
