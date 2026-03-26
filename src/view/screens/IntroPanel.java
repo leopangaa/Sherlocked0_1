@@ -1,0 +1,145 @@
+package view.screens;
+
+import main.MainGame;
+import utils.Assets;
+import utils.UiScale;
+import controller.MusicPlayer;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+public class IntroPanel extends JPanel {
+
+    private final String[] story = {
+            "It started with a call.",
+            "Another case.",
+            "Another body.",
+            "Another night that refuses to end.",
+            "The hotel stands quiet now.",
+            "Too quiet.",
+            "They said it was just a routine investigation.",
+            "A man found dead in Room 217.",
+            "No signs of forced entry.",
+            "No witnesses.",
+            "No clear motive.",
+            "Just... silence.",
+            "I’ve handled cases like this before.",
+            "But something feels different.",
+            "Like I’ve been here already.",
+            "Like I know this place...",
+            "better than I should.",
+            "The moment I stepped inside—",
+            "I felt it.",
+            "This place...",
+            "is trying to tell me something."
+    };
+
+    private int currentLine = 0;
+    private int charIndex = 0;
+    private boolean isTyping = false;
+    private final Timer typewriterTimer;
+    private String displayedText = "";
+    private boolean introFinished = false;
+
+    public IntroPanel() {
+        setLayout(null);
+        setBackground(Color.BLACK);
+        setPreferredSize(new Dimension(UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT));
+        setFocusable(true);
+
+
+        typewriterTimer = new Timer(40, e -> {
+            if (charIndex < story[currentLine].length()) {
+                displayedText += story[currentLine].charAt(charIndex);
+                charIndex++;
+                repaint();
+            } else {
+                stopTyping();
+            }
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                handleInput();
+            }
+        });
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                handleInput();
+            }
+        });
+    }
+
+    public void startIntro() {
+        currentLine = 0;
+        charIndex = 0;
+        introFinished = false;
+        
+        startTyping();
+        requestFocusInWindow();
+    }
+
+    private void startTyping() {
+        displayedText = "";
+        charIndex = 0;
+        isTyping = true;
+        typewriterTimer.start();
+    }
+
+    private void stopTyping() {
+        typewriterTimer.stop();
+        isTyping = false;
+        displayedText = story[currentLine];
+        repaint();
+    }
+
+    private void handleInput() {
+        if (introFinished) {
+            MainGame.getInstance().switchFloor("LOBBY");
+            return;
+        }
+
+        if (isTyping) {
+            stopTyping();
+        } else {
+            currentLine++;
+            if (currentLine < story.length) {
+                startTyping();
+            } else {
+                introFinished = true;
+                repaint();
+            }
+        }
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        g2d.setColor(new Color(245, 235, 220)); // Off-white/light beige
+        g2d.setFont(new Font("Serif", Font.PLAIN, UiScale.font(24)));
+
+        FontMetrics fm = g2d.getFontMetrics();
+        int x = (getWidth() - fm.stringWidth(displayedText)) / 2;
+        int y = getHeight() / 2 - UiScale.y(20);
+
+        g2d.drawString(displayedText, x, y);
+
+        if (introFinished) {
+            g2d.setFont(new Font("Serif", Font.ITALIC, UiScale.font(16)));
+            String continueText = "[Press any key to continue...]";
+            int cx = (getWidth() - g2d.getFontMetrics().stringWidth(continueText)) / 2;
+            int cy = y + UiScale.y(60);
+            g2d.drawString(continueText, cx, cy);
+        }
+    }
+}

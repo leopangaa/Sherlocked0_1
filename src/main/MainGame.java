@@ -8,6 +8,7 @@ import view.components.GameDialogPanel;
 import view.components.GameHud;
 import view.screens.CluePuzzlePanel;
 import view.screens.Floor1Panel;
+import view.screens.IntroPanel;
 import view.screens.InventoryPanel;
 import view.screens.LobbyPanel;
 import view.screens.MainMenuPanel;
@@ -26,6 +27,7 @@ public class MainGame {
     CardLayout cardLayout;
     JPanel container;
     CluePuzzlePanel puzzlePanel;
+    IntroPanel introPanel;
     InventoryPanel inventoryPanel;
     GameHud hud;
     GameDialogPanel dialogPanel;
@@ -59,14 +61,16 @@ public class MainGame {
 
         cardLayout = new CardLayout();
         container = new JPanel(cardLayout);
-        
+
         // We'll center the container in the root if the screen is larger
         int screenW = gd.getDisplayMode().getWidth();
         int screenH = gd.getDisplayMode().getHeight();
         int offsetX = (screenW - UiScale.GAME_WIDTH) / 2;
         int offsetY = (screenH - UiScale.GAME_HEIGHT) / 2;
-        if (offsetX < 0) offsetX = 0;
-        if (offsetY < 0) offsetY = 0;
+        if (offsetX < 0)
+            offsetX = 0;
+        if (offsetY < 0)
+            offsetY = 0;
 
         container.setBounds(offsetX, offsetY, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
@@ -74,6 +78,7 @@ public class MainGame {
         LobbyPanel lobby = new LobbyPanel();
         Floor1Panel floor1 = new Floor1Panel();
         puzzlePanel = new CluePuzzlePanel();
+        introPanel = new IntroPanel();
         inventoryPanel = new InventoryPanel();
         hud = new GameHud();
         hud.setBounds(offsetX, offsetY, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
@@ -88,6 +93,7 @@ public class MainGame {
         container.add(lobby, "LOBBY");
         container.add(floor1, "FLOOR1");
         container.add(puzzlePanel, "PUZZLE");
+        container.add(introPanel, "INTRO");
         container.add(inventoryPanel, "INVENTORY");
 
         root.add(container, JLayeredPane.DEFAULT_LAYER);
@@ -95,7 +101,7 @@ public class MainGame {
         root.add(dialogPanel, JLayeredPane.DRAG_LAYER);
 
         frame.setContentPane(root);
-        
+
         // NO PACK/LOCATION IF FULLSCREEN
         if (frame.getExtendedState() != JFrame.MAXIMIZED_BOTH && !frame.isUndecorated()) {
             frame.pack();
@@ -118,7 +124,8 @@ public class MainGame {
         am.put("toggleInventory", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!inventoryOpen && !hudEnabled) return;
+                if (!inventoryOpen && !hudEnabled)
+                    return;
                 toggleInventory();
             }
         });
@@ -126,7 +133,8 @@ public class MainGame {
         am.put("openSettings", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (!hudEnabled) return; // Only in-game
+                if (!hudEnabled)
+                    return; // Only in-game
                 openSettings();
             }
         });
@@ -146,14 +154,23 @@ public class MainGame {
         setHudEnabled(false);
 
         if (musicPlayer != null) {
-            musicPlayer.playLoop(Assets.audio("menu.wav"));
+            musicPlayer.playLoop(Assets.audio("intro.wav"));
             musicPlayer.setVolume(1f);
         }
     }
 
     public void startNewGame() {
         resetGameState();
-        switchFloor("LOBBY");
+        lastScreen = "INTRO";
+        inventoryOpen = false;
+        setHudEnabled(false);
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        cardLayout.show(container, "INTRO");
+        introPanel.startIntro();
     }
 
     public void continueGame() {
@@ -191,7 +208,8 @@ public class MainGame {
         });
         quitBtn.addActionListener(e -> quitGame());
 
-        dialogPanel.showCustom("Settings", settingsMenu, Arrays.asList("Back"), choice -> {});
+        dialogPanel.showCustom("Settings", settingsMenu, Arrays.asList("Back"), choice -> {
+        });
     }
 
     private JButton createMenuButton(String text, int x, int y, int w, int h) {
@@ -227,7 +245,7 @@ public class MainGame {
         textSpeedLabel.setBounds(0, UiScale.s(60), UiScale.s(150), UiScale.s(25));
         optionsPanel.add(textSpeedLabel);
 
-        String[] textSpeeds = {"Slow", "Normal", "Fast"};
+        String[] textSpeeds = { "Slow", "Normal", "Fast" };
         JComboBox<String> textSpeedBox = new JComboBox<>(textSpeeds);
         textSpeedBox.setSelectedIndex(1);
         textSpeedBox.setBounds(UiScale.s(160), UiScale.s(60), UiScale.s(120), UiScale.s(28));
