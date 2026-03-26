@@ -1,9 +1,7 @@
 package view.screens;
 
 import main.MainGame;
-import utils.Assets;
 import utils.UiScale;
-import controller.MusicPlayer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,12 +43,28 @@ public class IntroPanel extends JPanel {
     private String displayedText = "";
     private boolean introFinished = false;
 
+    private boolean skipConfirming = false;
+    private final Timer skipResetTimer;
+    private final Rectangle skipBounds;
+
     public IntroPanel() {
         setLayout(null);
         setBackground(Color.BLACK);
         setPreferredSize(new Dimension(UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT));
         setFocusable(true);
 
+        skipBounds = new Rectangle(
+                UiScale.GAME_WIDTH - UiScale.w(150),
+                UiScale.GAME_HEIGHT - UiScale.h(60),
+                UiScale.w(120),
+                UiScale.h(40)
+        );
+
+        skipResetTimer = new Timer(3000, e -> {
+            skipConfirming = false;
+            repaint();
+        });
+        skipResetTimer.setRepeats(false);
 
         typewriterTimer = new Timer(40, e -> {
             if (charIndex < story[currentLine].length()) {
@@ -65,7 +79,11 @@ public class IntroPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                handleInput();
+                if (skipBounds.contains(e.getPoint())) {
+                    handleSkip();
+                } else {
+                    handleInput();
+                }
             }
         });
 
@@ -98,6 +116,20 @@ public class IntroPanel extends JPanel {
         isTyping = false;
         displayedText = story[currentLine];
         repaint();
+    }
+
+    private void handleSkip() {
+        if (introFinished) return;
+
+        if (!skipConfirming) {
+            skipConfirming = true;
+            skipResetTimer.restart();
+            repaint();
+        } else {
+            skipResetTimer.stop();
+            skipConfirming = false;
+            MainGame.getInstance().switchFloor("LOBBY");
+        }
     }
 
     private void handleInput() {
@@ -140,6 +172,20 @@ public class IntroPanel extends JPanel {
             int cx = (getWidth() - g2d.getFontMetrics().stringWidth(continueText)) / 2;
             int cy = y + UiScale.y(60);
             g2d.drawString(continueText, cx, cy);
+        } else {
+            // SKIP BUTTON
+            g2d.setFont(new Font("Serif", Font.PLAIN, UiScale.font(18)));
+            String skipText = skipConfirming ? "Are you sure?" : "Skip >>";
+            g2d.setColor(skipConfirming ? Color.RED : new Color(245, 235, 220));
+            
+            FontMetrics sfm = g2d.getFontMetrics();
+            int sx = skipBounds.x + (skipBounds.width - sfm.stringWidth(skipText)) / 2;
+            int sy = skipBounds.y + (skipBounds.height - sfm.getHeight()) / 2 + sfm.getAscent();
+            
+            g2d.drawString(skipText, sx, sy);
+            
+            // Optional: border for click area debug/visual
+            // g2d.drawRect(skipBounds.x, skipBounds.y, skipBounds.width, skipBounds.height);
         }
     }
 }
