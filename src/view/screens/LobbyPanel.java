@@ -18,6 +18,8 @@ public class LobbyPanel extends JPanel {
     CardLayout areaLayout;
     JPanel areaContainer;
     DialogueUI dialogueUI;
+    LiamQuestPanel liamQuestPanel;
+    RegisterPuzzlePanel registerPuzzlePanel;
     JPanel inputBlocker;
 
     private static final Border GLOW_BORDER =
@@ -28,6 +30,41 @@ public class LobbyPanel extends JPanel {
         setLayout(null);
 
         dialogueUI = new DialogueUI();
+
+        liamQuestPanel = new LiamQuestPanel(success -> {
+            inputBlocker.setVisible(false);
+            setButtonsEnabled(areaContainer, true);
+            MainGame.getInstance().setHudEnabled(true);
+
+            if (success) {
+                String[] successDialogue = {
+                        "Liam: Yes! That's it! I remember now.",
+                        "Liam: They dropped this note. I don't know what to make of it.",
+                        "Liam: [CLUE FOUND: Mysterious note]"
+                };
+                startDialogue(successDialogue, () -> GameState.getInstance().addClue("Mysterious note"));
+            } else {
+                startDialogue(new String[]{"Liam: Sorry! It seems like you can't help me too."});
+            }
+        });
+
+        registerPuzzlePanel = new RegisterPuzzlePanel(success -> {
+            inputBlocker.setVisible(false);
+            setButtonsEnabled(areaContainer, true);
+            MainGame.getInstance().setHudEnabled(true);
+
+            if (success) {
+                String[] dialogue = {
+                        "The guest register is open to today's date.",
+                        "You see Dr. Kells' name, but it's crossed out in red ink.",
+                        "Next to it, someone has written a single word: 'LIAR'.",
+                        "There's another entry from someone named 'E. Vane' in Room 305."
+                };
+                startDialogue(dialogue, () -> GameState.getInstance().addClue("Guest Register entry"));
+            } else {
+                startDialogue(new String[]{"The lock on the register clicks back into place. That wasn't the right choice."});
+            }
+        });
 
         areaLayout = new CardLayout();
         areaContainer = new JPanel(areaLayout);
@@ -58,9 +95,11 @@ public class LobbyPanel extends JPanel {
         areaContainer.add(lobbyPartD, "D");
         areaContainer.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
-        add(dialogueUI, 0);
-        add(inputBlocker, 1);
-        add(areaContainer, 2);
+        add(liamQuestPanel, 0);
+        add(registerPuzzlePanel, 1);
+        add(dialogueUI, 2);
+        add(inputBlocker, 3);
+        add(areaContainer, 4);
     }
 
     private void setButtonsEnabled(Container root, boolean enabled) {
@@ -287,14 +326,26 @@ public class LobbyPanel extends JPanel {
         register.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 showInteractionMenu("GUEST REGISTER", null, () -> {
-                    String[] dialogue = {
-                            "The guest register is open to today's date.",
-                            "You see Dr. Kells' name, but it's crossed out in red ink.",
-                            "Next to it, someone has written a single word: 'LIAR'.",
-                            "There's another entry from someone named 'E. Vane' in Room 305."
-                    };
-                    startDialogue(dialogue);
-                    GameState.getInstance().addClue("Guest Register entry");
+                    if (!GameState.getInstance().hasClue("Guest Register entry")) {
+                        String[] preDialogue = {
+                                "The guest register is locked with a numerical security plate.",
+                                "A small display shows several numbers. You need to identify the correct sequence trigger."
+                        };
+                        startDialogue(preDialogue, () -> {
+                            inputBlocker.setVisible(true);
+                            setButtonsEnabled(areaContainer, false);
+                            MainGame.getInstance().setHudEnabled(false);
+                            registerPuzzlePanel.startPuzzle();
+                        });
+                    } else {
+                        String[] dialogue = {
+                                "The guest register is open to today's date.",
+                                "You see Dr. Kells' name, but it's crossed out in red ink.",
+                                "Next to it, someone has written a single word: 'LIAR'.",
+                                "There's another entry from someone named 'E. Vane' in Room 305."
+                        };
+                        startDialogue(dialogue);
+                    }
                 });
             }
         });
@@ -339,20 +390,23 @@ public class LobbyPanel extends JPanel {
             public void mouseClicked(MouseEvent evt) {
                 showInteractionMenu("LIAM",
                         () -> {
-                            String[] dialogue;
                             if (!GameState.getInstance().hasClue("Mysterious note")) {
-                                dialogue = new String[]{
+                                String[] initialDialogue = {
                                         "Liam: I saw someone near Room 217 last night... They looked... familiar.",
-                                        "Liam: They dropped this note. I don't know what to make of it.",
-                                        "Liam: [CLUE FOUND: Mysterious note]"
+                                        "Liam: They dropped a note, but I can't quite remember the order of the numbers on it.",
+                                        "Liam: Can you help me pick the right one? If we get it wrong, I might just forget it entirely."
                                 };
-                                GameState.getInstance().addClue("Mysterious note");
+                                startDialogue(initialDialogue, () -> {
+                                     inputBlocker.setVisible(true);
+                                     setButtonsEnabled(areaContainer, false);
+                                     MainGame.getInstance().setHudEnabled(false);
+                                     liamQuestPanel.startQuest();
+                                 });
                             } else {
-                                dialogue = new String[]{
+                                startDialogue(new String[]{
                                         "Liam: I already gave you that note, detective. Please be careful."
-                                };
+                                });
                             }
-                            startDialogue(dialogue);
                         },
                         () -> startDialogue(new String[]{
                                 "Liam is fidgeting with his bell. He seems anxious, constantly looking over his shoulder."
