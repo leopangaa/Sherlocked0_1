@@ -44,15 +44,14 @@ public class MainGame {
         frame.setUndecorated(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // TRUE FULL SCREEN
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice gd = ge.getDefaultScreenDevice();
-        if (gd.isFullScreenSupported()) {
-            gd.setFullScreenWindow(frame);
-        } else {
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            frame.setVisible(true);
-        }
+        Rectangle bounds = gd.getDefaultConfiguration().getBounds();
+        frame.setBounds(bounds);
+        frame.setVisible(true);
+
+        int screenW = (int) bounds.getWidth();
+        int screenH = (int) bounds.getHeight();
 
         root = new JLayeredPane();
         root.setPreferredSize(new Dimension(UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT));
@@ -62,9 +61,6 @@ public class MainGame {
         cardLayout = new CardLayout();
         container = new JPanel(cardLayout);
 
-        // We'll center the container in the root if the screen is larger
-        int screenW = gd.getDisplayMode().getWidth();
-        int screenH = gd.getDisplayMode().getHeight();
         int offsetX = (screenW - UiScale.GAME_WIDTH) / 2;
         int offsetY = (screenH - UiScale.GAME_HEIGHT) / 2;
         if (offsetX < 0)
@@ -102,7 +98,6 @@ public class MainGame {
 
         frame.setContentPane(root);
 
-        // NO PACK/LOCATION IF FULLSCREEN
         if (frame.getExtendedState() != JFrame.MAXIMIZED_BOTH && !frame.isUndecorated()) {
             frame.pack();
             frame.setLocationRelativeTo(null);
@@ -134,7 +129,7 @@ public class MainGame {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 if (!hudEnabled)
-                    return; // Only in-game
+                    return;
                 openSettings();
             }
         });
@@ -178,38 +173,38 @@ public class MainGame {
     }
 
     public void openSettings() {
-        dialogPanel.setPanelSize(UiScale.s(400), UiScale.s(300));
+        dialogPanel.setPanelSize(UiScale.s(500), UiScale.s(400));
         JPanel settingsMenu = new JPanel(null);
         settingsMenu.setOpaque(false);
 
-        int btnW = UiScale.s(200);
-        int btnH = UiScale.s(45);
-        int startY = UiScale.s(20);
-        int gap = UiScale.s(20);
+        int largeBtnW = UiScale.s(250);
+        int smallBtnW = UiScale.s(150);
+        int btnH = UiScale.s(30);
+        int startY = UiScale.s(40);
+        int gap = UiScale.s(25);
 
-        JButton optionsBtn = createMenuButton("Game Options", 0, startY, btnW, btnH);
-        JButton saveExitBtn = createMenuButton("Save and Exit", 0, startY + (btnH + gap), btnW, btnH);
-        JButton quitBtn = createMenuButton("Quit Game", 0, startY + 2 * (btnH + gap), btnW, btnH);
+        JButton optionsBtn = createMenuButton("Game Options", 0, startY, largeBtnW, btnH);
+        JButton saveExitBtn = createMenuButton("Save and Exit", 0, startY + (btnH + gap), largeBtnW, btnH);
+        JButton backBtn = createMenuButton("Back", 0, startY + 2 * (btnH + gap) + UiScale.s(10), smallBtnW, btnH);
 
         settingsMenu.add(optionsBtn);
         settingsMenu.add(saveExitBtn);
-        settingsMenu.add(quitBtn);
+        settingsMenu.add(backBtn);
 
-        // Center buttons in the custom panel
-        int panelWidth = UiScale.s(500) - UiScale.s(120); // from GameDialogPanel content width
-        optionsBtn.setLocation((panelWidth - btnW) / 2, optionsBtn.getY());
-        saveExitBtn.setLocation((panelWidth - btnW) / 2, saveExitBtn.getY());
-        quitBtn.setLocation((panelWidth - btnW) / 2, quitBtn.getY());
+        
+        int panelWidth = UiScale.s(500) - UiScale.s(120); 
+        optionsBtn.setLocation((panelWidth - largeBtnW) / 2, optionsBtn.getY());
+        saveExitBtn.setLocation((panelWidth - largeBtnW) / 2, saveExitBtn.getY());
+        backBtn.setLocation((panelWidth - smallBtnW) / 2, backBtn.getY());
 
         optionsBtn.addActionListener(e -> openOptions());
         saveExitBtn.addActionListener(e -> {
-            // Placeholder for save logic
+
             dialogPanel.showMessage("Save", "Game saved. Returning to menu...", () -> showMenu());
         });
-        quitBtn.addActionListener(e -> quitGame());
+        backBtn.addActionListener(e -> dialogPanel.setVisible(false));
 
-        dialogPanel.showCustom("Settings", settingsMenu, Arrays.asList("Back"), choice -> {
-        });
+        dialogPanel.showCustom("Settings", settingsMenu, Arrays.asList(), choice -> {});
     }
 
     private JButton createMenuButton(String text, int x, int y, int w, int h) {
@@ -347,8 +342,6 @@ public class MainGame {
         state.floor1Complete = false;
         state.floor2Complete = false;
 
-        // Add more flags here if your GameState has them, for example:
-        // state.lobbyComplete = false;
     }
 
     public void setHudEnabled(boolean enabled) {

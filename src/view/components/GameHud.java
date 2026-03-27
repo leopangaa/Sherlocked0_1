@@ -93,9 +93,28 @@ public class GameHud extends JPanel {
                 checkbox(d) + " Examine mirror\n\n" +
                 (gs.lobbyComplete ? "Next: Use elevator to Floor 1" : "Next: Gather all clues");
         } else if (gs.currentFloor == 1) {
+            boolean harper = gs.hasClue("Harper Testimony");
+            boolean doyle = gs.hasClue("Doyle Statement");
+            int roomClues = 0;
+            if (gs.hasClue("Distorted Reflection")) roomClues++;
+            if (gs.hasClue("Signs of Struggle")) roomClues++;
+            if (gs.hasClue("Therapy Notes Fragment")) roomClues++;
+            if (gs.hasClue("Sealed Window")) roomClues++;
+
+            String objective;
+            if (!harper || !doyle) {
+                objective = "Talk to the guests and investigate Room 217";
+            } else if (roomClues < 2) {
+                objective = "Investigate Room 217 for inconsistencies";
+            } else {
+                objective = "Find out what really happened";
+            }
+
             text = "Floor 1\n" +
-                checkbox(gs.floor1Complete) + " Investigate the guest rooms\n\n" +
-                (gs.floor1Complete ? "Next: Return to elevator" : "Next: Explore Room 217");
+                checkbox(harper) + " Harper Testimony\n" +
+                checkbox(doyle) + " Doyle Statement\n" +
+                checkbox(roomClues >= 2) + " Room 217 Investigation\n\n" +
+                "Next: " + objective;
         } else {
             text = "Objectives\n" +
                 "Progress your investigation.";
