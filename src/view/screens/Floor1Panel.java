@@ -8,10 +8,10 @@ import view.components.BackgroundPanel;
 import view.components.DialogueUI;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 
 public class Floor1Panel extends JPanel {
 
@@ -19,6 +19,9 @@ public class Floor1Panel extends JPanel {
     JPanel areaContainer;
     DialogueUI dialogueUI;
     JPanel inputBlocker;
+
+    private static final Border GLOW_BORDER =
+            BorderFactory.createLineBorder(new Color(255, 255, 255, 110), 2);
 
     public Floor1Panel() {
 
@@ -69,46 +72,61 @@ public class Floor1Panel extends JPanel {
         }
     }
 
-    private void addClue(String clueName) {
-        GameState.getInstance().addClue(clueName);
-        checkPuzzleTrigger();
+    private void startDialogue(String[] dialogue) {
+        dialogueUI.startDialogue(dialogue);
     }
 
-    private void checkPuzzleTrigger() {
-        GameState gs = GameState.getInstance();
-        if (gs.hasClue("Harper Testimony") && gs.hasClue("Doyle Statement")) {
-            int roomClues = 0;
-            if (gs.hasClue("Distorted Reflection")) roomClues++;
-            if (gs.hasClue("Signs of Struggle")) roomClues++;
-            if (gs.hasClue("Therapy Notes Fragment")) roomClues++;
-            if (gs.hasClue("Sealed Window")) roomClues++;
-
-            if (roomClues >= 2) {
-                String[] triggerDialogue = {
-                        "Something doesn’t add up...",
-                        "If no one entered or left…",
-                        "Then how did this happen?",
-                        "[PUZZLE UNLOCKED]"
-                };
-                dialogueUI.startDialogue(triggerDialogue, () -> MainGame.getInstance().openPuzzle("Mystery of Room 217", "FLOOR1"));
-            }
-        }
+    private void startDialogue(String[] dialogue, Runnable onComplete) {
+        dialogueUI.startDialogue(dialogue, onComplete);
     }
 
-    private JLabel createInteractionLabel(int x, int y, int w, int h, String title, Runnable talk, Runnable examine) {
+    private void showInteractionMenu(String title, Runnable talkAction, Runnable examineAction) {
+        dialogueUI.showInteractionMenu(title, talkAction, examineAction);
+    }
+
+    private void typeText(String text) {
+        dialogueUI.typeText(text);
+    }
+
+    private JLabel createClickableHotspotLabel(int baseX, int baseY, int baseW, int baseH) {
         JLabel label = new JLabel();
-        label.setBounds(UiScale.x(x), UiScale.y(y), UiScale.w(w), UiScale.h(h));
-        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        // label.setBorder(BorderFactory.createLineBorder(Color.RED)); // Debug
+        label.setBounds(UiScale.x(baseX), UiScale.y(baseY), UiScale.s(baseW), UiScale.s(baseH));
+        label.setOpaque(false);
+        return label;
+    }
+
+    private void applyHoverEffectToLabel(JLabel label) {
+        final Rectangle originalBounds = label.getBounds();
+
         label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (label.isEnabled()) {
-                    dialogueUI.showInteractionMenu(title, talk, examine);
-                }
+            public void mouseEntered(MouseEvent evt) {
+                if (!label.isEnabled()) return;
+                label.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+                int newWidth = (int) Math.round(originalBounds.width * 1.08);
+                int newHeight = (int) Math.round(originalBounds.height * 1.08);
+
+                int dx = (newWidth - originalBounds.width) / 2;
+                int dy = (newHeight - originalBounds.height) / 2;
+
+                label.setBounds(
+                        originalBounds.x - dx,
+                        originalBounds.y - dy,
+                        newWidth,
+                        newHeight
+                );
+
+                label.setBorder(GLOW_BORDER);
+                label.repaint();
+            }
+
+            public void mouseExited(MouseEvent evt) {
+                label.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                label.setBounds(originalBounds);
+                label.setBorder(null);
+                label.repaint();
             }
         });
-        return label;
     }
 
     private JButton createArrowButton(String arrowImagePath, int baseX, int baseY, int baseSize) {
@@ -155,65 +173,113 @@ public class Floor1Panel extends JPanel {
         return new ImageIcon(resizedImg);
     }
 
+    private void checkFloorCompletion() {
+        GameState gs = GameState.getInstance();
+        if (gs.hasClue("Harper Testimony") &&
+            gs.hasClue("Doyle Statement") &&
+            gs.hasClue("Signs of Struggle") &&
+            gs.hasClue("CCTV Footage Anomaly")) {
+            gs.floor1Complete = true;
+        }
+    }
+
     private JPanel createPart1A() {
         BackgroundPanel panel = new BackgroundPanel(Assets.img("part1A.jpg"));
 
-        // NPC 1: Ms. Harper
-        JLabel harper = createInteractionLabel(150, 200, 80, 150, "MS. HARPER",
-            () -> dialogueUI.startDialogue(new String[]{
-                "Ms. Harper: I saw someone leave that room… I’m sure of it.",
-                "Ms. Harper: They were wearing something dark… I think…",
-                "Ms. Harper: ...or maybe I didn’t see clearly.",
-                "[CLUE FOUND: Harper Testimony]"
-            }, () -> addClue("Harper Testimony")),
-            () -> dialogueUI.startDialogue(new String[]{"Ms. Harper looks nervous, her hands are trembling as she clutches her shawl."})
-        );
-        panel.add(harper);
+        // Ms. Harper Hotspot
+        JLabel msHarper = createClickableHotspotLabel(550, 180, 120, 180);
+        panel.add(msHarper);
+        applyHoverEffectToLabel(msHarper);
+        msHarper.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!msHarper.isEnabled()) return;
+                showInteractionMenu("MS. HARPER",
+                        () -> startDialogue(new String[]{
+                                "Ms. Harper: I saw someone leave that room… I’m sure of it.",
+                                "Ms. Harper: They were wearing something dark… I think…",
+                                "Ms. Harper: ...or maybe I didn’t see clearly.",
+                                "[CLUE FOUND: Harper Testimony]"
+                        }, () -> {
+                            GameState.getInstance().addClue("Harper Testimony");
+                            checkFloorCompletion();
+                        }),
+                        () -> startDialogue(new String[]{"Ms. Harper looks nervous, clutching her shawl as if she's afraid of her own shadow."})
+                );
+            }
+        });
 
-        // NPC 2: Mr. Doyle
-        JLabel doyle = createInteractionLabel(650, 200, 80, 150, "MR. DOYLE",
-            () -> dialogueUI.startDialogue(new String[]{
-                "Mr. Doyle: No one came in or out.",
-                "Mr. Doyle: I’ve been here all night.",
-                "Mr. Doyle: You should reconsider your assumptions, detective.",
-                "[CLUE FOUND: Doyle Statement]"
-            }, () -> addClue("Doyle Statement")),
-            () -> dialogueUI.startDialogue(new String[]{"Mr. Doyle is leaning against the wall with a stoic expression, his eyes fixed on the hallway."})
-        );
-        panel.add(doyle);
+        // Mr. Doyle Hotspot
+        JLabel mrDoyle = createClickableHotspotLabel(670, 180, 120, 180);
+        panel.add(mrDoyle);
+        applyHoverEffectToLabel(mrDoyle);
+        mrDoyle.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!mrDoyle.isEnabled()) return;
+                showInteractionMenu("MR. DOYLE",
+                        () -> startDialogue(new String[]{
+                                "Mr. Doyle: No one came in or out.",
+                                "Mr. Doyle: I’ve been here all night.",
+                                "Mr. Doyle: You should reconsider your assumptions, detective.",
+                                "[CLUE FOUND: Doyle Statement]"
+                        }, () -> {
+                            GameState.getInstance().addClue("Doyle Statement");
+                            checkFloorCompletion();
+                        }),
+                        () -> startDialogue(new String[]{"Mr. Doyle has a stoic expression. He seems like the kind of man who doesn't miss much."})
+                );
+            }
+        });
 
-        // Door 217
-        JLabel door217 = createInteractionLabel(400, 150, 100, 200, "DOOR 217",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "It’s locked… from the inside.",
-                "[CLUE FOUND: Room Locked From Inside]"
-            }, () -> addClue("Room Locked From Inside"))
-        );
+        // Room 217 Door
+        JLabel door217 = createClickableHotspotLabel(440, 160, 100, 250);
         panel.add(door217);
+        applyHoverEffectToLabel(door217);
+        door217.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!door217.isEnabled()) return;
+                showInteractionMenu("ROOM 217",
+                        () -> areaLayout.show(areaContainer, "PART1B"),
+                        () -> startDialogue(new String[]{"The brass numbers on the door are polished. Room 217. The air feels colder here."})
+                );
+            }
+        });
 
-        // Floor Stain
-        JLabel floorStain = createInteractionLabel(420, 400, 150, 50, "FLOOR STAIN",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "Something was dragged… recently.",
-                "[CLUE FOUND: Strange Drag Mark]"
-            }, () -> addClue("Strange Drag Mark"))
-        );
+        // Floor Papers / Stain
+        JLabel floorStain = createClickableHotspotLabel(145, 450, 80, 40);
         panel.add(floorStain);
+        applyHoverEffectToLabel(floorStain);
+        floorStain.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!floorStain.isEnabled()) return;
+                showInteractionMenu("FLOOR STAIN",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "There's a strange stain on the carpet... almost like something was dragged.",
+                                "[CLUE FOUND: Strange Stain]"
+                        }, () -> GameState.getInstance().addClue("Strange Stain"))
+                );
+            }
+        });
+
+        // Elevator Hotspot
+        JLabel elevator = createClickableHotspotLabel(175, 140, 230, 230);
+        panel.add(elevator);
+        applyHoverEffectToLabel(elevator);
+        elevator.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!elevator.isEnabled()) return;
+                if (!GameState.getInstance().floor1Complete) {
+                    typeText("I should investigate everything first.");
+                } else {
+                    MainGame.getInstance().switchFloor("ELEVATOR");
+                }
+            }
+        });
 
         // Navigation
-        JButton upArrow = createArrowButton(Assets.img("upArrow.png"), 425, 20, 50);
-        panel.add(upArrow);
-        upArrow.addActionListener(e -> areaLayout.show(areaContainer, "PART1B"));
-
-        JButton leftArrow = createArrowButton(Assets.img("leftArrow.png"), 30, 250, 50);
-        panel.add(leftArrow);
-        leftArrow.addActionListener(e -> areaLayout.show(areaContainer, "PART1C"));
-
-        JButton downArrow = createArrowButton(Assets.img("downArrow.png"), 425, 520, 50);
-        panel.add(downArrow);
-        downArrow.addActionListener(e -> MainGame.getInstance().switchFloor("LOBBY"));
+        JButton toUtility = createArrowButton(Assets.img("leftArrow.png"), 20, 250, 60);
+        panel.add(toUtility);
+        toUtility.addActionListener(e -> areaLayout.show(areaContainer, "PART1C"));
 
         return panel;
     }
@@ -221,55 +287,84 @@ public class Floor1Panel extends JPanel {
     private JPanel createPart1B() {
         BackgroundPanel panel = new BackgroundPanel(Assets.img("part1B.jpg"));
 
-        // Mirror
-        JLabel mirror = createInteractionLabel(100, 100, 120, 180, "MIRROR",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "My reflection feels… delayed.",
-                "...no, that’s not possible.",
-                "[CLUE FOUND: Distorted Reflection]"
-            }, () -> addClue("Distorted Reflection"))
-        );
-        panel.add(mirror);
-
-        // Bed
-        JLabel bed = createInteractionLabel(300, 300, 400, 200, "BED",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "Signs of struggle.",
-                "But no blood...",
-                "[CLUE FOUND: Signs of Struggle]"
-            }, () -> addClue("Signs of Struggle"))
-        );
+        // Bed Hotspot
+        JLabel bed = createClickableHotspotLabel(110, 370, 560, 55);
         panel.add(bed);
+        applyHoverEffectToLabel(bed);
+        bed.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!bed.isEnabled()) return;
+                showInteractionMenu("BED",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "The sheets are rumpled and tossed aside.",
+                                "Signs of struggle... but who was the victim?",
+                                "[CLUE FOUND: Signs of Struggle]"
+                        }, () -> {
+                            GameState.getInstance().addClue("Signs of Struggle");
+                            checkFloorCompletion();
+                        })
+                );
+            }
+        });
 
-        // Desk
-        JLabel desk = createInteractionLabel(750, 250, 150, 150, "DESK",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "Patient Log – Session Notes",
-                "...subject shows signs of denial...",
-                "...memory reconstruction unstable...",
-                "[CLUE FOUND: Therapy Notes Fragment]"
-            }, () -> addClue("Therapy Notes Fragment"))
-        );
+        // Mirror Hotspot
+        JLabel mirror = createClickableHotspotLabel(730, 100, 100, 100);
+        panel.add(mirror);
+        applyHoverEffectToLabel(mirror);
+        mirror.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!mirror.isEnabled()) return;
+                showInteractionMenu("MIRROR",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "The glass is old and slightly warped.",
+                                "My reflection feels... delayed. Almost like it's watching me.",
+                                "[CLUE FOUND: Distorted Reflection]"
+                        }, () -> GameState.getInstance().addClue("Distorted Reflection"))
+                );
+            }
+        });
+
+        // Desk Hotspot
+        JLabel desk = createClickableHotspotLabel(620, 300, 300, 40);
         panel.add(desk);
+        applyHoverEffectToLabel(desk);
+        desk.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!desk.isEnabled()) return;
+                showInteractionMenu("DESK",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "A scattered pile of papers sits on the desk.",
+                                "It's a fragment of therapy notes. 'Subject shows signs of severe dissociation...'",
+                                "[CLUE FOUND: Therapy Notes Fragment]"
+                        }, () -> GameState.getInstance().addClue("Therapy Notes Fragment"))
+                );
+            }
+        });
 
-        // Window
-        JLabel window = createInteractionLabel(500, 50, 150, 200, "WINDOW",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "Locked from the inside.",
-                "No forced entry.",
-                "[CLUE FOUND: Sealed Window]"
-            }, () -> addClue("Sealed Window"))
-        );
+        // Window Hotspot
+        JLabel window = createClickableHotspotLabel(480, 80, 170, 170);
         panel.add(window);
+        applyHoverEffectToLabel(window);
+        window.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!window.isEnabled()) return;
+                showInteractionMenu("WINDOW",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "The window is sealed shut from the inside. There's no way out this way.",
+                                "[CLUE FOUND: Sealed Window]"
+                        }, () -> GameState.getInstance().addClue("Sealed Window"))
+                );
+            }
+        });
 
-        // Navigation
-        JButton downArrow = createArrowButton(Assets.img("downArrow.png"), 425, 520, 50);
-        panel.add(downArrow);
-        downArrow.addActionListener(e -> areaLayout.show(areaContainer, "PART1A"));
+        // Navigation back to Hallway
+        JButton toHallway = createArrowButton(Assets.img("downArrow.png"), 425, 500, 60);
+        panel.add(toHallway);
+        toHallway.addActionListener(e -> areaLayout.show(areaContainer, "PART1A"));
 
         return panel;
     }
@@ -277,41 +372,67 @@ public class Floor1Panel extends JPanel {
     private JPanel createPart1C() {
         BackgroundPanel panel = new BackgroundPanel(Assets.img("part1C.jpg"));
 
-        // Cleaning Cart
-        JLabel cart = createInteractionLabel(200, 300, 200, 150, "CLEANING CART",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "A cleaning cart… something is missing.",
-                "[CLUE FOUND: Missing Cleaning Tool]"
-            }, () -> addClue("Missing Cleaning Tool"))
-        );
+        // Cleaning Cart Hotspot
+        JLabel cart = createClickableHotspotLabel(60, 300, 250, 170);
         panel.add(cart);
+        applyHoverEffectToLabel(cart);
+        cart.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!cart.isEnabled()) return;
+                showInteractionMenu("CLEANING CART",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "A cleaning cart left in the utility room.",
+                                "A heavy-duty bleach bottle is missing. The slot for it is empty.",
+                                "[CLUE FOUND: Missing Cleaning Tool]"
+                        }, () -> GameState.getInstance().addClue("Missing Cleaning Tool"))
+                );
+            }
+        });
 
-        // Trash Bin
-        JLabel trash = createInteractionLabel(700, 450, 100, 100, "TRASH BIN",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "A torn piece of paper…",
-                "You shouldn't be here.",
-                "[CLUE FOUND: Destroyed Note]"
-            }, () -> addClue("Destroyed Note"))
-        );
+        // Trash Bin Hotspot
+        JLabel trash = createClickableHotspotLabel(673, 450, 70, 70);
         panel.add(trash);
+        applyHoverEffectToLabel(trash);
+        trash.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!trash.isEnabled()) return;
+                showInteractionMenu("TRASH BIN",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "The bin is mostly empty, except for a scrap of paper.",
+                                "It's a destroyed note. Only a few words are legible: '...don't look back...'",
+                                "[CLUE FOUND: Destroyed Note]"
+                        }, () -> GameState.getInstance().addClue("Destroyed Note"))
+                );
+            }
+        });
 
-        // Sink
-        JLabel sink = createInteractionLabel(500, 250, 150, 100, "SINK",
-            null,
-            () -> dialogueUI.startDialogue(new String[]{
-                "Faint stains… washed away.",
-                "[CLUE FOUND: Cleaned Evidence]"
-            }, () -> addClue("Cleaned Evidence"))
-        );
-        panel.add(sink);
+        // CCTV Monitor Hotspot
+        JLabel monitor = createClickableHotspotLabel(600, 130, 150, 80);
+        panel.add(monitor);
+        applyHoverEffectToLabel(monitor);
+        monitor.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!monitor.isEnabled()) return;
+                showInteractionMenu("CCTV MONITOR",
+                        null,
+                        () -> startDialogue(new String[]{
+                                "The monitor flickers with static.",
+                                "The footage for Room 217's hallway is missing a five-minute block.",
+                                "[CLUE FOUND: CCTV Footage Anomaly]"
+                        }, () -> {
+                            GameState.getInstance().addClue("CCTV Footage Anomaly");
+                            checkFloorCompletion();
+                        })
+                );
+            }
+        });
 
-        // Navigation
-        JButton rightArrow = createArrowButton(Assets.img("rightArrow.png"), 820, 250, 50);
-        panel.add(rightArrow);
-        rightArrow.addActionListener(e -> areaLayout.show(areaContainer, "PART1A"));
+        // Navigation back to Hallway
+        JButton toHallway = createArrowButton(Assets.img("rightArrow.png"), 820, 250, 60);
+        panel.add(toHallway);
+        toHallway.addActionListener(e -> areaLayout.show(areaContainer, "PART1A"));
 
         return panel;
     }
