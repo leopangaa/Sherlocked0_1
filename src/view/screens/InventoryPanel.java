@@ -192,5 +192,133 @@ public class InventoryPanel extends JPanel {
                 "Liam handed over a note dropped near Room 217.\n\n" +
                 "He said the person who dropped it looked familiar.\n\n" +
                 "This clue may connect directly to the detective's investigation.");
+
+        // Floor 1 Clues
+        clueDescriptions.put("Harper Testimony",
+                "Harper Testimony\n\n" +
+                "Ms. Harper claims she saw someone leave Room 217.\n\n" +
+                "She described them as wearing 'something dark,' but she seemed unsure of herself.\n\n" +
+                "Is she hiding something, or truly terrified?");
+
+        clueDescriptions.put("Doyle Statement",
+                "Doyle Statement\n\n" +
+                "Mr. Doyle insists no one entered or left the room all night.\n\n" +
+                "He was positioned in the hallway and seems quite certain.\n\n" +
+                "This directly contradicts Ms. Harper's testimony.");
+
+        clueDescriptions.put("Strange Stain",
+                "Strange Stain\n\n" +
+                "A faint, discolored mark on the carpet outside Room 217.\n\n" +
+                "It looks like something heavy was dragged towards the utility room.\n\n" +
+                "The cleaning staff might have missed this.");
+
+        clueDescriptions.put("Signs of Struggle",
+                "Signs of Struggle\n\n" +
+                "The bedding in Room 217 is heavily disturbed.\n\n" +
+                "Items are knocked over, but there's no trace of blood or a struggle beyond the furniture.\n\n" +
+                "It feels staged... or extremely precise.");
+
+        clueDescriptions.put("Distorted Reflection",
+                "Distorted Reflection\n\n" +
+                "The mirror in Room 217 doesn't reflect things correctly.\n\n" +
+                "My own image felt delayed, as if the person in the glass was a second behind my movements.\n\n" +
+                "My head is starting to ache.");
+
+        clueDescriptions.put("Therapy Notes Fragment",
+                "Therapy Notes Fragment\n\n" +
+                "A torn page from a patient's log found on the desk.\n\n" +
+                "It mentions severe memory reconstruction issues and signs of denial.\n\n" +
+                "The patient's name is missing from the fragment.");
+
+        clueDescriptions.put("Sealed Window",
+                "Sealed Window\n\n" +
+                "The window in Room 217 is locked and sealed from the inside.\n\n" +
+                "There is no way anyone could have entered or exited through here without breaking the glass.\n\n" +
+                "This confirms the 'Locked Room' scenario.");
+
+        clueDescriptions.put("Missing Cleaning Tool",
+                "Missing Cleaning Tool\n\n" +
+                "A spot in the utility cart where a heavy-duty solvent should be.\n\n" +
+                "The bottle is gone, and there's a faint smell of bleach in the air.\n\n" +
+                "Someone was cleaning more than just the floors.");
+
+        clueDescriptions.put("Destroyed Note",
+                "Destroyed Note\n\n" +
+                "A scrap of paper found in the trash.\n\n" +
+                "Only the words '...don't look back...' are visible.\n\n" +
+                "It looks like it was written in a hurry.");
+
+        clueDescriptions.put("CCTV Footage Anomaly",
+                "CCTV Footage Anomaly\n\n" +
+                "The footage from the hallway has a five-minute gap.\n\n" +
+                "The timestamp jumps, and for a split second, a flickering figure is visible.\n\n" +
+                "Someone knows how to bypass the security system.");
+
+        // Floor 2 Clues
+        clueDescriptions.put("Rina Testimony",
+                "Rina Testimony\n\n" +
+                "The housekeeper was incredibly nervous.\n\n" +
+                "She claimed to know nothing, but her reaction to the Room 217 investigation was extreme.\n\n" +
+                "She's afraid of something—or someone.");
+
+        clueDescriptions.put("Jared Statement",
+                "Jared Statement\n\n" +
+                "The security guard's responses were repetitive and rehearsed.\n\n" +
+                "He kept saying 'Area is secure' even when asked direct questions about the incident.\n\n" +
+                "It felt like I was talking to a recording.");
+
+        clueDescriptions.put("Abandoned Cleaning Cart",
+                "Abandoned Cleaning Cart\n\n" +
+                "Found in the staff hallway, left in the middle of the corridor.\n\n" +
+                "It suggests the staff left in a significant hurry.\n\n" +
+                "Or perhaps they were told to leave.");
+
+        clueDescriptions.put("Staff Warning Notice",
+                "Staff Warning Notice\n\n" +
+                "A memo to all employees: 'REPORT ANY UNUSUAL BEHAVIOR'.\n\n" +
+                "The date on the notice is from three days ago.\n\n" +
+                "The management knew something was coming.");
+
+        clueDescriptions.put("Used Bedding",
+                "Used Bedding\n\n" +
+                "The bed in the staff quarters was recently occupied.\n\n" +
+                "The pillows are still indented, and the sheets are warm.\n\n" +
+                "Someone was resting here just minutes before I arrived.");
+
+        clueDescriptions.put("Hidden Journal",
+                "Hidden Journal\n\n" +
+                "A diary found hidden in a staff locker.\n\n" +
+                "It contains detailed observations of a 'patient' whose behavior is becoming unpredictable.\n\n" +
+                "The descriptions are disturbingly familiar.");
+
+        clueDescriptions.put("Distorted Self Image",
+                "Distorted Self Image\n\n" +
+                "Another mirror, another wrong reflection.\n\n" +
+                "This time, my face seemed to shift and blur into someone else's.\n\n" +
+                "I can't trust my own eyes anymore.");
+
+        clueDescriptions.put("Personal Notes",
+                "Personal Notes\n\n" +
+                "Notes about memory lapses and lost time.\n\n" +
+                "The handwriting matches my own.\n\n" +
+                "I don't remember writing these.");
+
+        clueDescriptions.put("Access Logs",
+                "Access Logs\n\n" +
+                "Digital records showing who accessed Room 217.\n\n" +
+                "The master key used belongs to the lead investigator.\n\n" +
+                "That's me. I was in that room.");
+
+        clueDescriptions.put("Patient Record",
+                "Patient Record\n\n" +
+                "A confidential file found in the records room.\n\n" +
+                "It bears my name, my photo, and a diagnosis of severe trauma-induced dissociation.\n\n" +
+                "I'm not the detective. I'm the subject.");
+
+        clueDescriptions.put("Archived Reports",
+                "Archived Reports\n\n" +
+                "Old files describing similar 'incidents' at this hotel.\n\n" +
+                "They all follow the same pattern: a death, a 'detective', and a missing memory.\n\n" +
+                "This has happened before. Many times.");
     }
 }

@@ -200,8 +200,7 @@ public class Floor1Panel extends JPanel {
                                 "Ms. Harper: ...or maybe I didn’t see clearly.",
                                 "[CLUE FOUND: Harper Testimony]"
                         }, () -> {
-                            GameState.getInstance().addClue("Harper Testimony");
-                            checkFloorCompletion();
+                            MainGame.getInstance().openPuzzle("Harper Testimony", "FLOOR1", "MEDIUM");
                         }),
                         () -> startDialogue(new String[]{"Ms. Harper looks nervous, clutching her shawl as if she's afraid of her own shadow."})
                 );
@@ -209,7 +208,7 @@ public class Floor1Panel extends JPanel {
         });
 
         // Mr. Doyle Hotspot
-        JLabel mrDoyle = createClickableHotspotLabel(670, 180, 120, 180);
+        JLabel mrDoyle = createClickableHotspotLabel(600, 180, 100, 220);
         panel.add(mrDoyle);
         applyHoverEffectToLabel(mrDoyle);
         mrDoyle.addMouseListener(new MouseAdapter() {
@@ -222,8 +221,7 @@ public class Floor1Panel extends JPanel {
                                 "Mr. Doyle: You should reconsider your assumptions, detective.",
                                 "[CLUE FOUND: Doyle Statement]"
                         }, () -> {
-                            GameState.getInstance().addClue("Doyle Statement");
-                            checkFloorCompletion();
+                            MainGame.getInstance().openPuzzle("Doyle Statement", "FLOOR1", "MEDIUM");
                         }),
                         () -> startDialogue(new String[]{"Mr. Doyle has a stoic expression. He seems like the kind of man who doesn't miss much."})
                 );
@@ -271,7 +269,7 @@ public class Floor1Panel extends JPanel {
                 if (!GameState.getInstance().floor1Complete) {
                     typeText("I should investigate everything first.");
                 } else {
-                    MainGame.getInstance().switchFloor("ELEVATOR");
+                    MainGame.getInstance().switchFloor("FLOOR2");
                 }
             }
         });
@@ -301,8 +299,7 @@ public class Floor1Panel extends JPanel {
                                 "Signs of struggle... but who was the victim?",
                                 "[CLUE FOUND: Signs of Struggle]"
                         }, () -> {
-                            GameState.getInstance().addClue("Signs of Struggle");
-                            checkFloorCompletion();
+                            MainGame.getInstance().openPuzzle("Signs of Struggle", "FLOOR1", "MEDIUM");
                         })
                 );
             }
@@ -422,8 +419,7 @@ public class Floor1Panel extends JPanel {
                                 "The footage for Room 217's hallway is missing a five-minute block.",
                                 "[CLUE FOUND: CCTV Footage Anomaly]"
                         }, () -> {
-                            GameState.getInstance().addClue("CCTV Footage Anomaly");
-                            checkFloorCompletion();
+                            MainGame.getInstance().openPuzzle("CCTV Footage Anomaly", "FLOOR1", "MEDIUM");
                         })
                 );
             }

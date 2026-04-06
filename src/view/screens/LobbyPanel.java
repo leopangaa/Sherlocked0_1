@@ -221,15 +221,16 @@ public class LobbyPanel extends JPanel {
     }
 
     private JPanel createLobbyPartA() {
-
         BackgroundPanel panel = new BackgroundPanel(Assets.img("lobbyA.jpg"));
 
+        // Mrs. Vale Hotspot (RECEPTIONIST IMAGE)
         JLabel mrsVale = createScaledIconLabel(Assets.img("receptionist.png"), 380, 160, 100, 130);
         panel.add(mrsVale);
         applyHoverEffectToLabel(mrsVale);
 
         mrsVale.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
+                if (!mrsVale.isEnabled()) return;
                 showInteractionMenu("MRS. VALE",
                         () -> {
                             if (!GameState.getInstance().hasClue("Dr. Kells photo")) {
@@ -239,7 +240,7 @@ public class LobbyPanel extends JPanel {
                                         "Mrs. Vale: I found some photos of him, but they are all mixed up.",
                                         "Mrs. Vale: If you can help me sort these files, I'll let you keep the photos."
                                 };
-                                startDialogue(dialogue, () -> MainGame.getInstance().openPuzzle("Dr. Kells photo", "LOBBY"));
+                                startDialogue(dialogue, () -> MainGame.getInstance().openPuzzle("Dr. Kells photo", "LOBBY", "EASY"));
                             } else {
                                 startDialogue(new String[]{"Mrs. Vale: I hope those photos help with your investigation, detective."});
                             }
@@ -248,6 +249,65 @@ public class LobbyPanel extends JPanel {
                                 "Mrs. Vale looks exhausted. Her eyes are bloodshot, as if she hasn't slept in days."
                         })
                 );
+            }
+        });
+
+        // Mirror Hotspot
+        JLabel mirror = createClickableHotspotLabel(210, 110, 80, 140);
+        panel.add(mirror);
+        applyHoverEffectToLabel(mirror);
+        mirror.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!mirror.isEnabled()) return;
+                showInteractionMenu("ORNATE MIRROR",
+                        null,
+                        () -> {
+                            String[] dialogue = {
+                                    "The mirror is covered in a thin layer of dust.",
+                                    "As you look closer, you notice something faint in the reflection.",
+                                    "It's a series of numbers written on the opposite wall, only visible from this angle.",
+                                    "[CLUE FOUND: Mirror reflection hint]"
+                            };
+                            startDialogue(dialogue, () -> {
+                                MainGame.getInstance().openPuzzle("Mirror reflection hint", "LOBBY", "EASY");
+                            });
+                        }
+                );
+            }
+        });
+
+        // Guest Register Hotspot
+        JLabel register = createClickableHotspotLabel(470, 275, 70, 40);
+        panel.add(register);
+        applyHoverEffectToLabel(register);
+        register.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!register.isEnabled()) return;
+                showInteractionMenu("GUEST REGISTER",
+                        null,
+                        () -> {
+                            inputBlocker.setVisible(true);
+                            setButtonsEnabled(areaContainer, false);
+                            MainGame.getInstance().setHudEnabled(false);
+                            registerPuzzlePanel.startPuzzle();
+                        }
+                );
+            }
+        });
+
+        // Elevator Hotspot
+        JLabel elevator = createClickableHotspotLabel(650, 120, 100, 200);
+        panel.add(elevator);
+        applyHoverEffectToLabel(elevator);
+        elevator.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                if (!elevator.isEnabled()) return;
+                if (GameState.getInstance().lobbyComplete) {
+                    GameState.getInstance().setCurrentFloor(1);
+                    MainGame.getInstance().switchFloor("FLOOR1");
+                } else {
+                    startDialogue(new String[]{"The elevator is locked. You should finish your investigation here first."});
+                }
             }
         });
 

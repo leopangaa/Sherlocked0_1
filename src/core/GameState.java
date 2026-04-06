@@ -68,13 +68,31 @@ public class GameState {
             clues.add(clue);
             System.out.println("Clue found: " + clue);
             
-            // Check if lobby is complete after finding enough clues
+            // Floor 0 completion
             if (clues.contains("Mysterious note") && 
                 clues.contains("Dr. Kells photo") && 
                 clues.contains("Guest Register entry") && 
                 clues.contains("Mirror reflection hint")) {
                 lobbyComplete = true;
             }
+
+            // Floor 1 completion
+            if (clues.contains("Harper Testimony") &&
+                clues.contains("Doyle Statement") &&
+                clues.contains("Signs of Struggle") &&
+                clues.contains("CCTV Footage Anomaly")) {
+                floor1Complete = true;
+            }
+
+            // Floor 2 completion
+            if (clues.contains("Rina Testimony") &&
+                clues.contains("Jared Statement") &&
+                clues.contains("Hidden Journal") &&
+                clues.contains("CCTV Footage Anomaly") &&
+                clues.contains("Patient Record")) {
+                floor2Complete = true;
+            }
+
             notifyListeners();
         }
     }

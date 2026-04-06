@@ -19,23 +19,26 @@ public class CluePuzzlePanel extends JPanel {
 
     public CluePuzzlePanel() {
         setLayout(new BorderLayout());
-        setBackground(new Color(40, 40, 45));
+        setBackground(new Color(24, 22, 20)); // Match the dark theme
 
-        instructionLabel = new JLabel("Sort the numbers in ascending order (Smallest to Largest)", SwingConstants.CENTER);
-        instructionLabel.setForeground(Color.WHITE);
-        instructionLabel.setFont(new Font("Serif", Font.BOLD, UiScale.font(20)));
-        instructionLabel.setBorder(BorderFactory.createEmptyBorder(UiScale.s(20), UiScale.s(10), UiScale.s(20), UiScale.s(10)));
+        instructionLabel = new JLabel("Sorting Algorithm: Arrange the sequence in ascending order", SwingConstants.CENTER);
+        instructionLabel.setForeground(new Color(240, 230, 210));
+        instructionLabel.setFont(new Font("Serif", Font.BOLD, UiScale.font(22)));
+        instructionLabel.setBorder(BorderFactory.createEmptyBorder(UiScale.s(30), UiScale.s(10), UiScale.s(30), UiScale.s(10)));
         add(instructionLabel, BorderLayout.NORTH);
 
-        numbersPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, UiScale.s(20), UiScale.s(50)));
+        numbersPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, UiScale.s(15), UiScale.s(50)));
         numbersPanel.setOpaque(false);
         add(numbersPanel, BorderLayout.CENTER);
 
-        JPanel southPanel = new JPanel();
+        JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, UiScale.s(20), UiScale.s(30)));
         southPanel.setOpaque(false);
 
-        JButton backButton = new JButton("Back");
+        JButton backButton = new JButton("Abort Investigation");
         backButton.setFont(new Font("Serif", Font.BOLD, UiScale.font(18)));
+        backButton.setBackground(new Color(60, 40, 30));
+        backButton.setForeground(new Color(220, 210, 190));
+        backButton.setFocusPainted(false);
         backButton.addActionListener(e -> {
             if (returnFloor != null) {
                 MainGame.getInstance().switchFloor(returnFloor);
@@ -48,21 +51,31 @@ public class CluePuzzlePanel extends JPanel {
         add(southPanel, BorderLayout.SOUTH);
     }
 
-    public void startPuzzle(String clue, String returnTo) {
+    public void startPuzzle(String clue, String returnTo, String difficulty) {
         this.clueToAward = clue;
         this.returnFloor = returnTo;
         this.solved = false;
-        instructionLabel.setText("Sort the numbers in ascending order (Smallest to Largest)");
         
-        // Generate random numbers
+        String diffText = "MEDIUM";
+        int count = 5; 
+        if ("HARD".equalsIgnoreCase(difficulty)) {
+            count = 8;
+            diffText = "HARD";
+        } else if ("EASY".equalsIgnoreCase(difficulty)) {
+            count = 3;
+            diffText = "EASY";
+        }
+        
+        instructionLabel.setText("Sorting Protocol [" + diffText + "]: Reconstruct the sequence");
+        
         numbers = new ArrayList<>();
-        while (numbers.size() < 5) {
-            int v = (int) (Math.random() * 100);
+        while (numbers.size() < count) {
+            int v = (int) (Math.random() * 90) + 10; // 2-digit numbers look better
             if (!numbers.contains(v)) numbers.add(v);
         }
 
         int guard = 0;
-        while (isSorted() && guard < 25) {
+        while (isSorted() && guard < 50) {
             Collections.shuffle(numbers);
             guard++;
         }
@@ -75,19 +88,20 @@ public class CluePuzzlePanel extends JPanel {
         for (int i = 0; i < numbers.size(); i++) {
             final int index = i;
             JButton numBtn = new JButton(String.valueOf(numbers.get(i)));
-            numBtn.setPreferredSize(new Dimension(UiScale.s(80), UiScale.s(80)));
-            numBtn.setFont(new Font("Monospaced", Font.BOLD, UiScale.font(24)));
+            numBtn.setPreferredSize(new Dimension(UiScale.s(75), UiScale.s(75)));
+            numBtn.setFont(new Font("Monospaced", Font.BOLD, UiScale.font(26)));
+            numBtn.setBackground(new Color(200, 190, 170)); // Match inventory button style
+            numBtn.setForeground(new Color(30, 25, 20));
+            numBtn.setFocusPainted(false);
+            numBtn.setBorder(BorderFactory.createLineBorder(new Color(60, 40, 30), 2));
             
-            // Simple swap logic for the dummy game
+            // Selection Sort / Bubble Sort inspired interaction: Swap with next
             numBtn.addActionListener(e -> {
                 if (solved) return;
-                if (index < numbers.size() - 1) {
-                    Collections.swap(numbers, index, index + 1);
-                    refreshUI();
-                } else {
-                    Collections.swap(numbers, index, 0);
-                    refreshUI();
-                }
+                // Swap current with next (circular)
+                int nextIndex = (index + 1) % numbers.size();
+                Collections.swap(numbers, index, nextIndex);
+                refreshUI();
             });
             
             numbersPanel.add(numBtn);

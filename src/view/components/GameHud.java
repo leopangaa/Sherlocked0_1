@@ -80,13 +80,15 @@ public class GameHud extends JPanel {
 
     public void refresh() {
         GameState gs = GameState.getInstance();
-        String text;
+        String text = "";
+        
+        // Use a consistent header format
         if (gs.currentFloor == 0) {
             boolean a = gs.hasClue("Dr. Kells photo");
             boolean b = gs.hasClue("Mysterious note");
             boolean c = gs.hasClue("Guest Register entry");
             boolean d = gs.hasClue("Mirror reflection hint");
-            text = "Lobby\n" +
+            text = "Lobby Objectives\n" +
                 checkbox(a) + " Obtain Dr. Kells photo\n" +
                 checkbox(b) + " Obtain Mysterious note\n" +
                 checkbox(c) + " Read guest register\n" +
@@ -95,25 +97,46 @@ public class GameHud extends JPanel {
         } else if (gs.currentFloor == 1) {
             boolean harper = gs.hasClue("Harper Testimony");
             boolean doyle = gs.hasClue("Doyle Statement");
-            int roomClues = 0;
-            if (gs.hasClue("Distorted Reflection")) roomClues++;
-            if (gs.hasClue("Signs of Struggle")) roomClues++;
-            if (gs.hasClue("Therapy Notes Fragment")) roomClues++;
-            if (gs.hasClue("Sealed Window")) roomClues++;
+            boolean struggle = gs.hasClue("Signs of Struggle");
+            boolean anomaly = gs.hasClue("CCTV Footage Anomaly");
 
             String objective;
             if (!harper || !doyle) {
                 objective = "Talk to the guests and investigate Room 217";
-            } else if (roomClues < 2) {
+            } else if (!struggle || !anomaly) {
                 objective = "Investigate Room 217 for inconsistencies";
             } else {
                 objective = "Find out what really happened";
             }
 
-            text = "Floor 1\n" +
+            text = "Floor 1 Objectives\n" +
                 checkbox(harper) + " Harper Testimony\n" +
                 checkbox(doyle) + " Doyle Statement\n" +
-                checkbox(roomClues >= 2) + " Room 217 Investigation\n\n" +
+                checkbox(struggle) + " Signs of Struggle\n" +
+                checkbox(anomaly) + " CCTV Anomaly\n\n" +
+                "Next: " + objective;
+        } else if (gs.currentFloor == 2) {
+            boolean rina = gs.hasClue("Rina Testimony");
+            boolean jared = gs.hasClue("Jared Statement");
+            boolean journal = gs.hasClue("Hidden Journal");
+            boolean anomaly = gs.hasClue("CCTV Footage Anomaly");
+            boolean record = gs.hasClue("Patient Record");
+
+            String objective;
+            if (!rina || !jared) {
+                objective = "Talk to the staff in the hallway";
+            } else if (!journal || !anomaly || !record) {
+                objective = "Search the staff quarters and security room";
+            } else {
+                objective = "Understand your role in this mystery";
+            }
+
+            text = "Floor 2 Objectives\n" +
+                checkbox(rina) + " Rina Testimony\n" +
+                checkbox(jared) + " Jared Statement\n" +
+                checkbox(journal) + " Hidden Journal\n" +
+                checkbox(anomaly) + " CCTV Anomaly\n" +
+                checkbox(record) + " Patient Record\n\n" +
                 "Next: " + objective;
         } else {
             text = "Objectives\n" +

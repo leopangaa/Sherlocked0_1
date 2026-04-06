@@ -8,7 +8,9 @@ import view.components.GameDialogPanel;
 import view.components.GameHud;
 import view.screens.CluePuzzlePanel;
 import view.screens.Floor1Panel;
+import view.screens.Floor2Panel;
 import view.screens.IntroPanel;
+import view.screens.OutroPanel;
 import view.screens.InventoryPanel;
 import view.screens.LobbyPanel;
 import view.screens.MainMenuPanel;
@@ -28,6 +30,7 @@ public class MainGame {
     JPanel container;
     CluePuzzlePanel puzzlePanel;
     IntroPanel introPanel;
+    OutroPanel outroPanel;
     InventoryPanel inventoryPanel;
     GameHud hud;
     GameDialogPanel dialogPanel;
@@ -48,33 +51,33 @@ public class MainGame {
         GraphicsDevice gd = ge.getDefaultScreenDevice();
         Rectangle bounds = gd.getDefaultConfiguration().getBounds();
         frame.setBounds(bounds);
-        frame.setVisible(true);
 
-        int screenW = (int) bounds.getWidth();
-        int screenH = (int) bounds.getHeight();
+        int screenW = bounds.width;
+        int screenH = bounds.height;
 
         root = new JLayeredPane();
-        root.setPreferredSize(new Dimension(UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT));
+        root.setPreferredSize(new Dimension(screenW, screenH));
         root.setBackground(Color.BLACK);
         root.setOpaque(true);
 
         cardLayout = new CardLayout();
         container = new JPanel(cardLayout);
+        container.setOpaque(false);
 
         int offsetX = (screenW - UiScale.GAME_WIDTH) / 2;
         int offsetY = (screenH - UiScale.GAME_HEIGHT) / 2;
-        if (offsetX < 0)
-            offsetX = 0;
-        if (offsetY < 0)
-            offsetY = 0;
+        if (offsetX < 0) offsetX = 0;
+        if (offsetY < 0) offsetY = 0;
 
         container.setBounds(offsetX, offsetY, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
         MainMenuPanel menu = new MainMenuPanel();
         LobbyPanel lobby = new LobbyPanel();
         Floor1Panel floor1 = new Floor1Panel();
+        Floor2Panel floor2 = new Floor2Panel();
         puzzlePanel = new CluePuzzlePanel();
         introPanel = new IntroPanel();
+        outroPanel = new OutroPanel();
         inventoryPanel = new InventoryPanel();
         hud = new GameHud();
         hud.setBounds(offsetX, offsetY, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
@@ -88,8 +91,10 @@ public class MainGame {
         container.add(menu, "MENU");
         container.add(lobby, "LOBBY");
         container.add(floor1, "FLOOR1");
+        container.add(floor2, "FLOOR2");
         container.add(puzzlePanel, "PUZZLE");
         container.add(introPanel, "INTRO");
+        container.add(outroPanel, "OUTRO");
         container.add(inventoryPanel, "INVENTORY");
 
         root.add(container, JLayeredPane.DEFAULT_LAYER);
@@ -97,13 +102,7 @@ public class MainGame {
         root.add(dialogPanel, JLayeredPane.DRAG_LAYER);
 
         frame.setContentPane(root);
-
-        if (frame.getExtendedState() != JFrame.MAXIMIZED_BOTH && !frame.isUndecorated()) {
-            frame.pack();
-            frame.setLocationRelativeTo(null);
-            frame.setResizable(false);
-            frame.setVisible(true);
-        }
+        frame.setVisible(true);
 
         showMenu();
         installGlobalKeybinds();
@@ -152,6 +151,13 @@ public class MainGame {
             musicPlayer.playLoop(Assets.audio("intro.wav"));
             musicPlayer.setVolume(1f);
         }
+    }
+
+    public void triggerChapterEnd() {
+        musicPlayer.playLoop(Assets.audio("intro.wav")); // Reuse eerie track
+        cardLayout.show(container, "OUTRO");
+        outroPanel.startOutro();
+        setHudEnabled(false);
     }
 
     public void startNewGame() {
@@ -271,9 +277,9 @@ public class MainGame {
         });
     }
 
-    public void openPuzzle(String clue, String returnTo) {
+    public void openPuzzle(String clue, String returnTo, String difficulty) {
         lastScreen = returnTo;
-        puzzlePanel.startPuzzle(clue, returnTo);
+        puzzlePanel.startPuzzle(clue, returnTo, difficulty);
 
         if (hud != null) {
             hud.setVisible(false);
@@ -283,6 +289,10 @@ public class MainGame {
         setHudEnabled(false);
         inventoryOpen = false;
         cardLayout.show(container, "PUZZLE");
+    }
+
+    public void openPuzzle(String clue, String returnTo) {
+        openPuzzle(clue, returnTo, "MEDIUM");
     }
 
     public void openInventory() {
@@ -331,6 +341,9 @@ public class MainGame {
         } else if ("FLOOR1".equals(floorName)) {
             GameState.getInstance().setCurrentFloor(1);
             musicPlayer.playLoop(Assets.audio("floor1.wav"));
+        } else if ("FLOOR2".equals(floorName)) {
+            GameState.getInstance().setCurrentFloor(2);
+            musicPlayer.playLoop(Assets.audio("floor2.wav"));
         }
     }
 
