@@ -254,6 +254,12 @@ public class InventoryPanel extends JPanel {
                 "The timestamp jumps, and for a split second, a flickering figure is visible.\n\n" +
                 "Someone knows how to bypass the security system.");
 
+        clueDescriptions.put("Room 217 Key",
+                "Room 217 Key\n\n" +
+                "A standard hotel room key found hanging from the side of a cleaning cart.\n\n" +
+                "A small brass tag is attached with the number '217' stamped into it.\n\n" +
+                "This should grant me access to the scene of the incident.");
+
         // Floor 2 Clues
         clueDescriptions.put("Rina Testimony",
                 "Rina Testimony\n\n" +

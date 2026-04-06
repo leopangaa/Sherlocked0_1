@@ -99,11 +99,12 @@ public class GameHud extends JPanel {
             boolean doyle = gs.hasClue("Doyle Statement");
             boolean struggle = gs.hasClue("Signs of Struggle");
             boolean anomaly = gs.hasClue("CCTV Footage Anomaly");
+            boolean window = gs.hasClue("Sealed Window");
 
             String objective;
             if (!harper || !doyle) {
                 objective = "Talk to the guests and investigate Room 217";
-            } else if (!struggle || !anomaly) {
+            } else if (!struggle || !anomaly || !window) {
                 objective = "Investigate Room 217 for inconsistencies";
             } else {
                 objective = "Find out what really happened";
@@ -113,7 +114,8 @@ public class GameHud extends JPanel {
                 checkbox(harper) + " Harper Testimony\n" +
                 checkbox(doyle) + " Doyle Statement\n" +
                 checkbox(struggle) + " Signs of Struggle\n" +
-                checkbox(anomaly) + " CCTV Anomaly\n\n" +
+                checkbox(anomaly) + " CCTV Anomaly\n" +
+                checkbox(window) + " Sealed Window\n\n" +
                 "Next: " + objective;
         } else if (gs.currentFloor == 2) {
             boolean rina = gs.hasClue("Rina Testimony");

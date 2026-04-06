@@ -80,7 +80,8 @@ public class GameState {
             if (clues.contains("Harper Testimony") &&
                 clues.contains("Doyle Statement") &&
                 clues.contains("Signs of Struggle") &&
-                clues.contains("CCTV Footage Anomaly")) {
+                clues.contains("CCTV Footage Anomaly") &&
+                clues.contains("Sealed Window")) {
                 floor1Complete = true;
             }
 

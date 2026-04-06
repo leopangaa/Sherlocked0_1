@@ -21,6 +21,10 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 
+import view.screens.WindowPuzzleQuest;
+import view.screens.MsHarperPuzzlePanel;
+import view.screens.CctvAnomalyPuzzlePanel;
+
 public class MainGame {
 
     private static MainGame instance;
@@ -29,6 +33,9 @@ public class MainGame {
     CardLayout cardLayout;
     JPanel container;
     CluePuzzlePanel puzzlePanel;
+    WindowPuzzleQuest windowPuzzlePanel;
+    MsHarperPuzzlePanel harperPuzzlePanel;
+    CctvAnomalyPuzzlePanel cctvPuzzlePanel;
     IntroPanel introPanel;
     OutroPanel outroPanel;
     InventoryPanel inventoryPanel;
@@ -76,6 +83,9 @@ public class MainGame {
         Floor1Panel floor1 = new Floor1Panel();
         Floor2Panel floor2 = new Floor2Panel();
         puzzlePanel = new CluePuzzlePanel();
+        windowPuzzlePanel = new WindowPuzzleQuest();
+        harperPuzzlePanel = new MsHarperPuzzlePanel();
+        cctvPuzzlePanel = new CctvAnomalyPuzzlePanel();
         introPanel = new IntroPanel();
         outroPanel = new OutroPanel();
         inventoryPanel = new InventoryPanel();
@@ -93,6 +103,9 @@ public class MainGame {
         container.add(floor1, "FLOOR1");
         container.add(floor2, "FLOOR2");
         container.add(puzzlePanel, "PUZZLE");
+        container.add(windowPuzzlePanel, "WINDOW_PUZZLE");
+        container.add(harperPuzzlePanel, "HARPER_PUZZLE");
+        container.add(cctvPuzzlePanel, "CCTV_PUZZLE");
         container.add(introPanel, "INTRO");
         container.add(outroPanel, "OUTRO");
         container.add(inventoryPanel, "INVENTORY");
@@ -293,6 +306,48 @@ public class MainGame {
 
     public void openPuzzle(String clue, String returnTo) {
         openPuzzle(clue, returnTo, "MEDIUM");
+    }
+
+    public void openWindowPuzzle(String clue, String returnTo) {
+        lastScreen = returnTo;
+        windowPuzzlePanel.startPuzzle(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "WINDOW_PUZZLE");
+    }
+
+    public void openHarperPuzzle(String clue, String returnTo) {
+        lastScreen = returnTo;
+        harperPuzzlePanel.startPuzzle(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "HARPER_PUZZLE");
+    }
+
+    public void openCctvPuzzle(String clue, String returnTo) {
+        lastScreen = returnTo;
+        cctvPuzzlePanel.startPuzzle(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "CCTV_PUZZLE");
     }
 
     public void openInventory() {
