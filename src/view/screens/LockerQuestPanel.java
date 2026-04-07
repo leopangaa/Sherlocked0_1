@@ -6,8 +6,6 @@ import utils.UiScale;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LockerQuestPanel extends JPanel {
     private static final Color PANEL_BG = new Color(25, 22, 18);

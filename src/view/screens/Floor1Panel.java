@@ -249,7 +249,7 @@ public class Floor1Panel extends JPanel {
         });
 
         // Mr. Doyle Hotspot
-        JLabel mrDoyle = createClickableHotspotLabel(600, 180, 100, 220);
+        JLabel mrDoyle = createClickableHotspotLabel(670, 180, 100, 220);
         panel.add(mrDoyle);
         applyHoverEffectToLabel(mrDoyle);
         mrDoyle.addMouseListener(new MouseAdapter() {
