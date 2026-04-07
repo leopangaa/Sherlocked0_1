@@ -2,6 +2,7 @@ package view.components;
 
 import utils.Assets;
 import utils.UiScale;
+import utils.TTSManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -81,6 +82,9 @@ public class DialogueUI extends JPanel {
 
     @Override
     public void setVisible(boolean aFlag) {
+        if (!aFlag) {
+            TTSManager.stop();
+        }
         boolean old = isVisible();
         super.setVisible(aFlag);
         if (visibilityListener != null && old != aFlag) {
@@ -94,6 +98,7 @@ public class DialogueUI extends JPanel {
     }
 
     private void hideInteractionButtons() {
+        TTSManager.stop();
         Rectangle talkBounds = talkBtn.getBounds();
         Rectangle examineBounds = examineBtn.getBounds();
         talkBtn.setVisible(false);
@@ -104,6 +109,7 @@ public class DialogueUI extends JPanel {
     }
 
     private void handleAdvanceClick() {
+        TTSManager.stop();
         if (isInteractionMenuOpen) {
             // If interaction menu is open, clicks on the dialogue box itself should not advance/close it.
             return;
@@ -151,6 +157,7 @@ public class DialogueUI extends JPanel {
     }
 
     public void startDialogue(String[] dialogue, Runnable onComplete) {
+        TTSManager.stop();
         isInteractionMenuOpen = false;
         setVisible(true);
         hideInteractionButtons();
@@ -164,6 +171,7 @@ public class DialogueUI extends JPanel {
     }
 
     private void showNextDialogue() {
+        TTSManager.stop();
         if (currentDialogueQueue != null && dialogueQueueIndex < currentDialogueQueue.length) {
             typeText(currentDialogueQueue[dialogueQueueIndex]);
             dialogueQueueIndex++;
@@ -180,10 +188,14 @@ public class DialogueUI extends JPanel {
     }
 
     public void typeText(String text) {
-        typeText(text, true);
+        typeText(text, true, true);
     }
 
     public void typeText(String text, boolean autoHide) {
+        typeText(text, autoHide, true);
+    }
+
+    public void typeText(String text, boolean autoHide, boolean allowSpeech) {
         if (!isVisible()) setVisible(true);
         hideInteractionButtons();
         
@@ -197,6 +209,11 @@ public class DialogueUI extends JPanel {
         currentFullText = text;
         charIndex = 0;
         dialogueBox.setText("");
+
+        if (allowSpeech) {
+            String speechText = cleanForSpeech(text);
+            TTSManager.speak(speechText);
+        }
 
         typewriterTimer = new Timer(25, e -> {
             if (charIndex < currentFullText.length()) {
@@ -214,10 +231,27 @@ public class DialogueUI extends JPanel {
         typewriterTimer.start();
     }
 
+    private String cleanForSpeech(String text) {
+        if (text == null) return "";
+
+        String speechText = text;
+        // Strip NPC name (everything before the first colon)
+        int colonIndex = speechText.indexOf(":");
+        if (colonIndex != -1 && colonIndex < 25) { // Threshold to avoid stripping if colon is far in (like a URL or time)
+            speechText = speechText.substring(colonIndex + 1).trim();
+        }
+
+        return speechText
+                .replace("...", ". ")
+                .replace("—", ", ")
+                .replace("-", " ")
+                .trim();
+    }
+
     public void showInteractionMenu(String title, Runnable talkAction, Runnable examineAction) {
         isInteractionMenuOpen = true;
         setVisible(true);
-        typeText("Interacting with: " + title, false);
+        typeText("Interacting with: " + title, false, false);
         
         // Reset listeners
         for (java.awt.event.ActionListener al : talkBtn.getActionListeners()) talkBtn.removeActionListener(al);
@@ -226,6 +260,7 @@ public class DialogueUI extends JPanel {
         if (talkAction != null) {
             talkBtn.setVisible(true);
             talkBtn.addActionListener(e -> {
+                TTSManager.stop();
                 isInteractionMenuOpen = false; // Close menu on button click
                 talkBtn.setVisible(false);
                 examineBtn.setVisible(false);
@@ -239,6 +274,7 @@ public class DialogueUI extends JPanel {
         if (examineAction != null) {
             examineBtn.setVisible(true);
             examineBtn.addActionListener(e -> {
+                TTSManager.stop();
                 isInteractionMenuOpen = false; // Close menu on button click
                 talkBtn.setVisible(false);
                 examineBtn.setVisible(false);

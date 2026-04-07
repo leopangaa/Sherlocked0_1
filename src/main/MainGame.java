@@ -4,6 +4,7 @@ import controller.MusicPlayer;
 import core.GameState;
 import utils.Assets;
 import utils.UiScale;
+import utils.TTSManager;
 import view.components.GameDialogPanel;
 import view.components.GameHud;
 import view.screens.CluePuzzlePanel;
@@ -176,6 +177,7 @@ public class MainGame {
     }
 
     public void showMenu() {
+        TTSManager.stop();
         lastScreen = "MENU";
         inventoryOpen = false;
 
@@ -195,6 +197,7 @@ public class MainGame {
     }
 
     public void triggerChapterEnd() {
+        TTSManager.stop();
         musicPlayer.playLoop(Assets.audio("intro.wav")); // Reuse eerie track
         cardLayout.show(container, "OUTRO");
         outroPanel.startOutro();
@@ -202,6 +205,7 @@ public class MainGame {
     }
 
     public void startNewGame() {
+        TTSManager.stop();
         resetGameState();
         lastScreen = "INTRO";
         inventoryOpen = false;
@@ -505,6 +509,7 @@ public class MainGame {
     }
 
     public void switchFloor(String floorName) {
+        TTSManager.stop();
         lastScreen = floorName;
         inventoryOpen = false;
         cardLayout.show(container, floorName);
