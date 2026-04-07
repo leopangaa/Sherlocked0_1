@@ -56,6 +56,8 @@ public class Floor1Panel extends JPanel {
         areaContainer.add(part1C, "PART1C");
         areaContainer.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
+        GameState.getInstance().addListener(this::checkFloorCompletion);
+
         add(dialogueUI, 0);
         add(inputBlocker, 1);
         add(areaContainer, 2);
@@ -178,7 +180,8 @@ public class Floor1Panel extends JPanel {
         if (gs.hasClue("Harper Testimony") &&
             gs.hasClue("Doyle Statement") &&
             gs.hasClue("Signs of Struggle") &&
-            gs.hasClue("CCTV Footage Anomaly")) {
+            gs.hasClue("CCTV Footage Anomaly") &&
+            gs.hasClue("Sealed Window")) {
             gs.floor1Complete = true;
         }
     }
@@ -194,14 +197,20 @@ public class Floor1Panel extends JPanel {
             public void mouseClicked(MouseEvent evt) {
                 if (!msHarper.isEnabled()) return;
                 showInteractionMenu("MS. HARPER",
-                        () -> startDialogue(new String[]{
-                                "Ms. Harper: I saw someone leave that room… I’m sure of it.",
-                                "Ms. Harper: They were wearing something dark… I think…",
-                                "Ms. Harper: ...or maybe I didn’t see clearly.",
-                                "[CLUE FOUND: Harper Testimony]"
-                        }, () -> {
-                            MainGame.getInstance().openPuzzle("Harper Testimony", "FLOOR1", "MEDIUM");
-                        }),
+                        () -> {
+                            if (!GameState.getInstance().hasClue("Harper Testimony")) {
+                                startDialogue(new String[]{
+                                        "Ms. Harper: Oh, detective... I'm so sorry. I saw someone leave that room, but my eyes... they're playing tricks on me.",
+                                        "Ms. Harper: Everything is a blur. I can't quite distinguish the shapes anymore. It's like a headache that won't go away.",
+                                        "Ms. Harper: Could you help me focus? Maybe if I can just clear my vision, I'll remember clearly."
+                                }, () -> MainGame.getInstance().openHarperPuzzle("Harper Testimony", "FLOOR1"));
+                            } else {
+                                startDialogue(new String[]{
+                                        "Ms. Harper: Thank you so much for helping me focus, detective. It's like a fog has lifted from my mind.",
+                                        "Ms. Harper: Now I am sure of it! The person I saw was carrying a heavy bag and heading towards the utility room."
+                                });
+                            }
+                        },
                         () -> startDialogue(new String[]{"Ms. Harper looks nervous, clutching her shawl as if she's afraid of her own shadow."})
                 );
             }
@@ -221,7 +230,7 @@ public class Floor1Panel extends JPanel {
                                 "Mr. Doyle: You should reconsider your assumptions, detective.",
                                 "[CLUE FOUND: Doyle Statement]"
                         }, () -> {
-                            MainGame.getInstance().openPuzzle("Doyle Statement", "FLOOR1", "MEDIUM");
+                            GameState.getInstance().addClue("Doyle Statement");
                         }),
                         () -> startDialogue(new String[]{"Mr. Doyle has a stoic expression. He seems like the kind of man who doesn't miss much."})
                 );
@@ -236,7 +245,19 @@ public class Floor1Panel extends JPanel {
             public void mouseClicked(MouseEvent evt) {
                 if (!door217.isEnabled()) return;
                 showInteractionMenu("ROOM 217",
-                        () -> areaLayout.show(areaContainer, "PART1B"),
+                        () -> {
+                            if (GameState.getInstance().hasClue("Room 217 Key")) {
+                                startDialogue(new String[]{
+                                        "I use the key I found on the cleaning cart.",
+                                        "The lock clicks. The door creaks as it opens..."
+                                }, () -> areaLayout.show(areaContainer, "PART1B"));
+                            } else {
+                                startDialogue(new String[]{
+                                        "The door is locked tight.",
+                                        "I'll need to find a way to open this. Maybe the staff has a spare key somewhere?"
+                                });
+                            }
+                        },
                         () -> startDialogue(new String[]{"The brass numbers on the door are polished. Room 217. The air feels colder here."})
                 );
             }
@@ -254,7 +275,10 @@ public class Floor1Panel extends JPanel {
                         () -> startDialogue(new String[]{
                                 "There's a strange stain on the carpet... almost like something was dragged.",
                                 "[CLUE FOUND: Strange Stain]"
-                        }, () -> GameState.getInstance().addClue("Strange Stain"))
+                        }, () -> {
+                            GameState.getInstance().addClue("Strange Stain");
+                            checkFloorCompletion();
+                        })
                 );
             }
         });
@@ -299,7 +323,8 @@ public class Floor1Panel extends JPanel {
                                 "Signs of struggle... but who was the victim?",
                                 "[CLUE FOUND: Signs of Struggle]"
                         }, () -> {
-                            MainGame.getInstance().openPuzzle("Signs of Struggle", "FLOOR1", "MEDIUM");
+                            GameState.getInstance().addClue("Signs of Struggle");
+                            checkFloorCompletion();
                         })
                 );
             }
@@ -350,10 +375,20 @@ public class Floor1Panel extends JPanel {
                 if (!window.isEnabled()) return;
                 showInteractionMenu("WINDOW",
                         null,
-                        () -> startDialogue(new String[]{
-                                "The window is sealed shut from the inside. There's no way out this way.",
-                                "[CLUE FOUND: Sealed Window]"
-                        }, () -> GameState.getInstance().addClue("Sealed Window"))
+                        () -> {
+                            if (!GameState.getInstance().hasClue("Sealed Window")) {
+                                startDialogue(new String[]{
+                                        "The window is sealed shut from the inside.",
+                                        "Wait... there are faint marks on the glass. Letters?",
+                                        "They're all jumbled up. I need to decipher this."
+                                }, () -> MainGame.getInstance().openWindowPuzzle("Sealed Window", "FLOOR1"));
+                            } else {
+                                startDialogue(new String[]{
+                                        "The window is sealed shut from the inside. There's no way out this way.",
+                                        "The decrypted message 'MEMORYLIAR' still haunts the glass."
+                                });
+                            }
+                        }
                 );
             }
         });
@@ -378,11 +413,22 @@ public class Floor1Panel extends JPanel {
                 if (!cart.isEnabled()) return;
                 showInteractionMenu("CLEANING CART",
                         null,
-                        () -> startDialogue(new String[]{
-                                "A cleaning cart left in the utility room.",
-                                "A heavy-duty bleach bottle is missing. The slot for it is empty.",
-                                "[CLUE FOUND: Missing Cleaning Tool]"
-                        }, () -> GameState.getInstance().addClue("Missing Cleaning Tool"))
+                        () -> {
+                            if (!GameState.getInstance().hasClue("Room 217 Key")) {
+                                startDialogue(new String[]{
+                                        "A cleaning cart left in the utility room.",
+                                        "Wait... there's something shiny hanging from a small hook on the side.",
+                                        "It's a key! There's a small tag on it: '217'.",
+                                        "[ITEM FOUND: Room 217 Key]"
+                                }, () -> GameState.getInstance().addClue("Room 217 Key"));
+                            } else {
+                                startDialogue(new String[]{
+                                        "A cleaning cart left in the utility room.",
+                                        "A heavy-duty bleach bottle is missing. The slot for it is empty.",
+                                        "[CLUE FOUND: Missing Cleaning Tool]"
+                                }, () -> GameState.getInstance().addClue("Missing Cleaning Tool"));
+                            }
+                        }
                 );
             }
         });
@@ -412,16 +458,26 @@ public class Floor1Panel extends JPanel {
         monitor.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!monitor.isEnabled()) return;
-                showInteractionMenu("CCTV MONITOR",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "The monitor flickers with static.",
-                                "The footage for Room 217's hallway is missing a five-minute block.",
-                                "[CLUE FOUND: CCTV Footage Anomaly]"
-                        }, () -> {
-                            MainGame.getInstance().openPuzzle("CCTV Footage Anomaly", "FLOOR1", "MEDIUM");
-                        })
-                );
+                
+                if (GameState.getInstance().hasClue("CCTV Footage Anomaly")) {
+                    startDialogue(new String[]{
+                            "The system is restored and I can now open the footage.",
+                            "However, there is still a five-minute block missing from the timestamp.",
+                            "The anomaly is definitely intentional."
+                    });
+                } else {
+                    showInteractionMenu("CCTV MONITOR",
+                            null,
+                            () -> startDialogue(new String[]{
+                                    "The monitor flickers with static. It's unreadable.",
+                                    "The system is reporting a timestamp synchronization error.",
+                                    "I need to fix it by aligning the timestamps from largest to smallest.",
+                                    "[PUZZLE: REPAIR CCTV SYSTEM]"
+                            }, () -> {
+                                MainGame.getInstance().openCctvPuzzle("CCTV Footage Anomaly", "FLOOR1");
+                            })
+                    );
+                }
             }
         });
 
