@@ -120,8 +120,8 @@ public class MainGame {
 
         musicPlayer = new MusicPlayer();
 
-        ///container.add(menu, "MENU");
-        ///container.add(lobby, "LOBBY");
+        container.add(menu, "MENU");
+        container.add(lobby, "LOBBY");
         container.add(floor1, "FLOOR1");
         container.add(floor2, "FLOOR2");
         container.add(puzzlePanel, "PUZZLE");
