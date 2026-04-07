@@ -458,16 +458,26 @@ public class Floor1Panel extends JPanel {
         monitor.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!monitor.isEnabled()) return;
-                showInteractionMenu("CCTV MONITOR",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "The monitor flickers with static.",
-                                "The footage for Room 217's hallway is missing a five-minute block.",
-                                "[CLUE FOUND: CCTV Footage Anomaly]"
-                        }, () -> {
-                            GameState.getInstance().addClue("CCTV Footage Anomaly");
-                        })
-                );
+                
+                if (GameState.getInstance().hasClue("CCTV Footage Anomaly")) {
+                    startDialogue(new String[]{
+                            "The system is restored and I can now open the footage.",
+                            "However, there is still a five-minute block missing from the timestamp.",
+                            "The anomaly is definitely intentional."
+                    });
+                } else {
+                    showInteractionMenu("CCTV MONITOR",
+                            null,
+                            () -> startDialogue(new String[]{
+                                    "The monitor flickers with static. It's unreadable.",
+                                    "The system is reporting a timestamp synchronization error.",
+                                    "I need to fix it by aligning the timestamps from largest to smallest.",
+                                    "[PUZZLE: REPAIR CCTV SYSTEM]"
+                            }, () -> {
+                                MainGame.getInstance().openCctvPuzzle("CCTV Footage Anomaly", "FLOOR1");
+                            })
+                    );
+                }
             }
         });
 

@@ -6,13 +6,9 @@ import utils.UiScale;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class WindowPuzzleQuest extends JPanel {
     private static final Color PANEL_BG = new Color(15, 12, 10);
-    private static final Color PANEL_BORDER = new Color(70, 60, 50);
     private static final Color TEXT_COLOR = new Color(245, 235, 220);
     private static final Color BUTTON_BG = new Color(35, 30, 25);
     private static final Color BUTTON_HOVER = new Color(50, 45, 40);

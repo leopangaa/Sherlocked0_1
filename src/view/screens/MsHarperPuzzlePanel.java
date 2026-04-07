@@ -13,13 +13,10 @@ import java.util.List;
 import java.util.Set;
 
 public class MsHarperPuzzlePanel extends JPanel {
-    private static final Color PANEL_BG = new Color(15, 12, 10);
-    private static final Color PANEL_BORDER = new Color(70, 60, 50);
     private static final Color TEXT_COLOR = new Color(245, 235, 220);
     private static final Color BUTTON_BG = new Color(35, 30, 25);
     private static final Color BUTTON_HOVER = new Color(50, 45, 40);
     private static final Color BUTTON_BORDER = new Color(100, 90, 80);
-    private static final Color BUTTON_SELECTED = new Color(90, 76, 58);
     private static final Color BUTTON_CORRECT = new Color(40, 70, 40);
 
     private String clueToAward;
@@ -28,7 +25,6 @@ public class MsHarperPuzzlePanel extends JPanel {
     private JLabel instructionLabel;
     private List<Integer> allNumbers;
     private Set<Integer> duplicatedNumbers; // The 5 target numbers
-    private Set<Integer> foundNumbers; // Numbers from duplicatedNumbers that were clicked
     private int totalClickedCorrect; // Should reach 10 (5 pairs)
     private boolean solved;
 
@@ -92,7 +88,6 @@ public class MsHarperPuzzlePanel extends JPanel {
         this.returnFloor = returnTo;
         this.solved = false;
         this.totalClickedCorrect = 0;
-        this.foundNumbers = new HashSet<>();
         
         generateNumbers();
         refreshUI();

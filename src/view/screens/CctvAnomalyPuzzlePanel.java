@@ -82,6 +82,9 @@ public class CctvAnomalyPuzzlePanel extends JPanel {
         this.returnFloor = returnTo;
         this.solved = false;
         
+        // Visual "Error" effect before starting
+        showErrorSequence();
+        
         numbers = new ArrayList<>();
         while (numbers.size() < 7) {
             int n = (int) (Math.random() * 90) + 10; // 10-99
@@ -96,6 +99,34 @@ public class CctvAnomalyPuzzlePanel extends JPanel {
         }
         
         refreshUI();
+    }
+
+    private void showErrorSequence() {
+        instructionLabel.setText("!!! CRITICAL SYSTEM ERROR !!!");
+        instructionLabel.setForeground(Color.RED);
+        setBackground(Color.DARK_GRAY);
+        
+        Timer glitchTimer = new Timer(100, null);
+        final int[] frames = {0};
+        glitchTimer.addActionListener(e -> {
+            frames[0]++;
+            if (frames[0] % 2 == 0) {
+                setBackground(new Color(40, 0, 0));
+                instructionLabel.setVisible(false);
+            } else {
+                setBackground(PANEL_BG);
+                instructionLabel.setVisible(true);
+            }
+            
+            if (frames[0] > 10) {
+                glitchTimer.stop();
+                setBackground(PANEL_BG);
+                instructionLabel.setVisible(true);
+                instructionLabel.setText("CCTV System Error: Align timestamps from Largest to Smallest to fix the feed.");
+                instructionLabel.setForeground(TEXT_COLOR);
+            }
+        });
+        glitchTimer.start();
     }
 
     private void refreshUI() {
@@ -133,7 +164,7 @@ public class CctvAnomalyPuzzlePanel extends JPanel {
 
     private void onSolved() {
         solved = true;
-        instructionLabel.setText("System Restored. Footage anomaly identified.");
+        instructionLabel.setText("System Restored. You can now open the footage, but a 5-minute block is missing.");
         if (clueToAward != null && !clueToAward.isBlank()) {
             GameState.getInstance().addClue(clueToAward);
         }

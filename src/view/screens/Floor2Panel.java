@@ -198,17 +198,22 @@ public class Floor2Panel extends JPanel {
         rina.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!rina.isEnabled()) return;
-                showInteractionMenu("RINA",
-                        () -> startDialogue(new String[]{
-                                "Rina: Oh! Detective... I didn't see you there.",
-                                "Rina: I... I'm just finished cleaning. I don't know anything about that room.",
-                                "Rina: Please, I have work to do. I can't talk right now.",
-                                "[CLUE FOUND: Rina Testimony]"
-                        }, () -> {
-                            MainGame.getInstance().openPuzzle("Rina Testimony", "FLOOR2", "HARD");
-                        }),
-                        () -> startDialogue(new String[]{"Rina is avoiding eye contact. Her hands are shaking slightly as she adjusts her apron."})
-                );
+                
+                if (GameState.getInstance().hasClue("Rina Testimony")) {
+                    startDialogue(new String[]{"Rina: Thank you for helping me remember, detective. I'm much calmer now."});
+                } else {
+                    showInteractionMenu("RINA",
+                            () -> startDialogue(new String[]{
+                                    "Rina: Oh, Detective! I'm so confused... I remember cleaning the rooms near 217, but the room numbers are all jumbled in my head.",
+                                    "Rina: If you could help me identify which rooms I was in, I might remember what I saw there.",
+                                    "Detective: Don't worry, Rina. Just tell me the sequences you remember, and I'll help you pick the right ones.",
+                                    "[QUEST: HELP RINA REMEMBER]"
+                            }, () -> {
+                                MainGame.getInstance().openRinaQuest("Rina Testimony", "FLOOR2");
+                            }),
+                            () -> startDialogue(new String[]{"Rina is avoiding eye contact. Her hands are shaking slightly as she adjusts her apron."})
+                    );
+                }
             }
         });
 
@@ -219,17 +224,23 @@ public class Floor2Panel extends JPanel {
         jared.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!jared.isEnabled()) return;
-                showInteractionMenu("JARED",
-                        () -> startDialogue(new String[]{
-                                "Jared: Area is secure, detective. Everything is under control.",
-                                "Jared: I've been on duty all night. No unauthorized access.",
-                                "Jared: Area is secure, detective. Everything is under control.",
-                                "[CLUE FOUND: Jared Statement]"
-                        }, () -> {
-                            MainGame.getInstance().openPuzzle("Jared Statement", "FLOOR2", "HARD");
-                        }),
-                        () -> startDialogue(new String[]{"Jared stands perfectly still. His responses feel rehearsed, almost robotic."})
-                );
+                
+                if (GameState.getInstance().hasClue("Jared Statement")) {
+                    startDialogue(new String[]{"Jared: I've told you what I saw, Detective. Please, just leave me be."});
+                } else {
+                    showInteractionMenu("JARED",
+                            () -> startDialogue(new String[]{
+                                    "Jared: Area is secure, detective. Everything is under control.",
+                                    "Jared: I've been on duty all night. No unauthorized access.",
+                                    "Detective: You seem adamant, Jared... but your eyes are wavering.",
+                                    "Detective: Let me check your confirmation again. Are you absolutely sure?",
+                                    "[QUEST: QUESTION JARED]"
+                            }, () -> {
+                                MainGame.getInstance().openJaredQuest("Jared Statement", "FLOOR2");
+                            }),
+                            () -> startDialogue(new String[]{"Jared stands perfectly still. His responses feel rehearsed, almost robotic."})
+                    );
+                }
             }
         });
 
@@ -240,13 +251,21 @@ public class Floor2Panel extends JPanel {
         cart.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!cart.isEnabled()) return;
-                showInteractionMenu("CLEANING CART",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "An abandoned cleaning cart. It looks like someone left in a hurry.",
-                                "[CLUE FOUND: Abandoned Cleaning Cart]"
-                        }, () -> GameState.getInstance().addClue("Abandoned Cleaning Cart"))
-                );
+                
+                if (GameState.getInstance().hasClue("Abandoned Cleaning Cart")) {
+                    startDialogue(new String[]{"The cart is stained with dried blood. Someone was cleaning something they shouldn't have."});
+                } else {
+                    showInteractionMenu("CLEANING CART",
+                            null,
+                            () -> startDialogue(new String[]{
+                                    "An abandoned cleaning cart. It looks like someone left in a hurry.",
+                                    "Wait... there's something jumbled under these cleaning supplies.",
+                                    "[QUEST: INVESTIGATE CLEANING CART]"
+                            }, () -> {
+                                MainGame.getInstance().openCleaningCartQuest("Abandoned Cleaning Cart", "FLOOR2");
+                            })
+                    );
+                }
             }
         });
 
@@ -322,16 +341,21 @@ public class Floor2Panel extends JPanel {
         locker.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!locker.isEnabled()) return;
-                showInteractionMenu("LOCKER",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "Inside the locker, tucked under some clothes, is a journal.",
-                                "It mentions a 'patient' who has been showing 'concerning progress'.",
-                                "[CLUE FOUND: Hidden Journal]"
-                        }, () -> {
-                            MainGame.getInstance().openPuzzle("Hidden Journal", "FLOOR2", "HARD");
-                        })
-                );
+                
+                if (GameState.getInstance().hasClue("Hidden Journal")) {
+                    startDialogue(new String[]{"The locker is open. I've already retrieved the journal from inside."});
+                } else {
+                    showInteractionMenu("LOCKER",
+                            null,
+                            () -> startDialogue(new String[]{
+                                    "A metal staff locker. It's locked with a 5-digit electronic keypad.",
+                                    "I need the correct sequence to open it.",
+                                    "[PUZZLE: UNLOCK LOCKER]"
+                            }, () -> {
+                                MainGame.getInstance().openLockerQuest("Hidden Journal", "FLOOR2");
+                            })
+                    );
+                }
             }
         });
 
@@ -360,13 +384,21 @@ public class Floor2Panel extends JPanel {
         desk.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!desk.isEnabled()) return;
-                showInteractionMenu("DESK",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "Personal notes are scattered here. They mention memory lapses and gaps in time.",
-                                "[CLUE FOUND: Personal Notes]"
-                        }, () -> GameState.getInstance().addClue("Personal Notes"))
-                );
+                
+                if (GameState.getInstance().hasClue("Personal Notes")) {
+                    startDialogue(new String[]{"The desk is open. I've already collected the notes from inside."});
+                } else {
+                    showInteractionMenu("DESK",
+                            null,
+                            () -> startDialogue(new String[]{
+                                    "A sturdy wooden desk. It's locked with a small electronic keypad.",
+                                    "I need to crack the code to see what's inside.",
+                                    "[PUZZLE: UNLOCK DESK]"
+                            }, () -> {
+                                MainGame.getInstance().openDeskPuzzle("Personal Notes", "FLOOR2");
+                            })
+                    );
+                }
             }
         });
 
@@ -388,17 +420,40 @@ public class Floor2Panel extends JPanel {
         monitor.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!monitor.isEnabled()) return;
-                showInteractionMenu("CCTV MONITORS",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "The footage shows an empty hallway... then a sudden flicker.",
-                                "For a split second, I see myself standing near Room 217 at the time of the incident.",
-                                "But I was in the lobby... wasn't I?",
-                                "[CLUE FOUND: CCTV Footage Anomaly]"
-                        }, () -> {
-                            MainGame.getInstance().openPuzzle("CCTV Footage Anomaly", "FLOOR2", "HARD");
-                        })
-                );
+                
+                if (GameState.getInstance().hasClue("CCTV Footage Anomaly")) {
+                    startDialogue(new String[]{
+                            "The monitors are showing a steady feed now.",
+                            "Wait... I still see myself in that footage, standing outside Room 217 at the time of the incident.",
+                            "The anomaly is definitely real."
+                    });
+                } else {
+                    // CCTV Flicker Effect
+                    Timer flicker = new Timer(50, null);
+                    final int[] count = {0};
+                    flicker.addActionListener(e -> {
+                        count[0]++;
+                        monitor.setVisible(count[0] % 2 == 0);
+                        if (count[0] > 6) {
+                            flicker.stop();
+                            monitor.setVisible(true);
+                            
+                            showInteractionMenu("CCTV MONITORS",
+                                    null,
+                                    () -> startDialogue(new String[]{
+                                            "The monitor flickers violently with static.",
+                                            "A sudden glitch... I see myself in the footage, standing outside Room 217.",
+                                            "But that's impossible. I wasn't there...",
+                                            "[CLUE FOUND: CCTV Footage Anomaly]"
+                                    }, () -> {
+                                        GameState.getInstance().addClue("CCTV Footage Anomaly");
+                                        checkFloorCompletion();
+                                    })
+                            );
+                        }
+                    });
+                    flicker.start();
+                }
             }
         });
 
@@ -409,14 +464,24 @@ public class Floor2Panel extends JPanel {
         terminal.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!terminal.isEnabled()) return;
-                showInteractionMenu("TERMINAL",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "The access logs show Room 217 was accessed using a master keycard.",
-                                "The card was assigned to... me.",
-                                "[CLUE FOUND: Access Logs]"
-                        }, () -> GameState.getInstance().addClue("Access Logs"))
-                );
+                
+                if (GameState.getInstance().hasClue("Access Logs")) {
+                    startDialogue(new String[]{
+                            "The terminal is unlocked. The access logs confirm Room 217 was accessed using my master keycard.",
+                            "The code used for the bypass... it's ingrained in my memory."
+                    });
+                } else {
+                    showInteractionMenu("TERMINAL",
+                            null,
+                            () -> startDialogue(new String[]{
+                                    "The nursing station terminal. It's locked behind a security bypass screen.",
+                                    "It's requesting a missing digit for an authorization sequence.",
+                                    "[PUZZLE: TERMINAL BYPASS]"
+                            }, () -> {
+                                MainGame.getInstance().openTerminalPuzzle("Access Logs", "FLOOR2");
+                            })
+                    );
+                }
             }
         });
 
@@ -433,9 +498,12 @@ public class Floor2Panel extends JPanel {
                                 "A thick binder labeled 'Confidential'.",
                                 "I find a patient record with my own name and photo.",
                                 "Diagnosis: 'Severe trauma-induced dissociative identity disorder'.",
+                                "Scrawled in the margin of the last page is a number: 32142.",
+                                "I'm not sure what it means yet.",
                                 "[CLUE FOUND: Patient Record]"
                         }, () -> {
-                            MainGame.getInstance().openPuzzle("Patient Record", "FLOOR2", "HARD");
+                            GameState.getInstance().addClue("Patient Record");
+                            checkFloorCompletion();
                         })
                 );
             }
@@ -448,13 +516,21 @@ public class Floor2Panel extends JPanel {
         cabinet.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 if (!cabinet.isEnabled()) return;
-                showInteractionMenu("CABINET",
-                        null,
-                        () -> startDialogue(new String[]{
-                                "Archived reports from years ago. They describe incidents remarkably similar to this one.",
-                                "[CLUE FOUND: Archived Reports]"
-                        }, () -> GameState.getInstance().addClue("Archived Reports"))
-                );
+                
+                if (GameState.getInstance().hasClue("Archived Reports")) {
+                    startDialogue(new String[]{"The cabinet is open. I've already collected the reports from inside."});
+                } else {
+                    showInteractionMenu("CABINET",
+                            null,
+                            () -> startDialogue(new String[]{
+                                    "Archived reports from years ago. The drawer is jammed tight.",
+                                    "I need to apply some force to the correct mechanism to pull it open.",
+                                    "[PUZZLE: OPEN FILING CABINET]"
+                            }, () -> {
+                                MainGame.getInstance().openCabinetPuzzle("Archived Reports", "FLOOR2");
+                            })
+                    );
+                }
             }
         });
 

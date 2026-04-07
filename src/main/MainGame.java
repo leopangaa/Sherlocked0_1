@@ -24,6 +24,13 @@ import java.util.List;
 import view.screens.WindowPuzzleQuest;
 import view.screens.MsHarperPuzzlePanel;
 import view.screens.CctvAnomalyPuzzlePanel;
+import view.screens.RinaQuestPanel;
+import view.screens.CleaningCartPanel;
+import view.screens.DeskPuzzlePanel;
+import view.screens.LockerQuestPanel;
+import view.screens.CabinetPuzzlePanel;
+import view.screens.TerminalPuzzleQuest;
+import view.screens.JaredPuzzleQuest;
 
 public class MainGame {
 
@@ -36,6 +43,13 @@ public class MainGame {
     WindowPuzzleQuest windowPuzzlePanel;
     MsHarperPuzzlePanel harperPuzzlePanel;
     CctvAnomalyPuzzlePanel cctvPuzzlePanel;
+    RinaQuestPanel rinaQuestPanel;
+    CleaningCartPanel cleaningCartPanel;
+    DeskPuzzlePanel deskPuzzlePanel;
+    LockerQuestPanel lockerQuestPanel;
+    CabinetPuzzlePanel cabinetPuzzlePanel;
+    TerminalPuzzleQuest terminalPuzzleQuest;
+    JaredPuzzleQuest jaredPuzzleQuest;
     IntroPanel introPanel;
     OutroPanel outroPanel;
     InventoryPanel inventoryPanel;
@@ -86,6 +100,13 @@ public class MainGame {
         windowPuzzlePanel = new WindowPuzzleQuest();
         harperPuzzlePanel = new MsHarperPuzzlePanel();
         cctvPuzzlePanel = new CctvAnomalyPuzzlePanel();
+        rinaQuestPanel = new RinaQuestPanel();
+        cleaningCartPanel = new CleaningCartPanel();
+        deskPuzzlePanel = new DeskPuzzlePanel();
+        lockerQuestPanel = new LockerQuestPanel();
+        cabinetPuzzlePanel = new CabinetPuzzlePanel();
+        terminalPuzzleQuest = new TerminalPuzzleQuest();
+        jaredPuzzleQuest = new JaredPuzzleQuest();
         introPanel = new IntroPanel();
         outroPanel = new OutroPanel();
         inventoryPanel = new InventoryPanel();
@@ -106,6 +127,13 @@ public class MainGame {
         container.add(windowPuzzlePanel, "WINDOW_PUZZLE");
         container.add(harperPuzzlePanel, "HARPER_PUZZLE");
         container.add(cctvPuzzlePanel, "CCTV_PUZZLE");
+        container.add(rinaQuestPanel, "RINA_QUEST");
+        container.add(cleaningCartPanel, "CLEANING_CART_QUEST");
+        container.add(deskPuzzlePanel, "DESK_PUZZLE");
+        container.add(lockerQuestPanel, "LOCKER_QUEST");
+        container.add(cabinetPuzzlePanel, "CABINET_PUZZLE");
+        container.add(terminalPuzzleQuest, "TERMINAL_PUZZLE");
+        container.add(jaredPuzzleQuest, "JARED_QUEST");
         container.add(introPanel, "INTRO");
         container.add(outroPanel, "OUTRO");
         container.add(inventoryPanel, "INVENTORY");
@@ -350,6 +378,104 @@ public class MainGame {
         cardLayout.show(container, "CCTV_PUZZLE");
     }
 
+    public void openRinaQuest(String clue, String returnTo) {
+        lastScreen = returnTo;
+        rinaQuestPanel.startQuest(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "RINA_QUEST");
+    }
+
+    public void openCleaningCartQuest(String clue, String returnTo) {
+        lastScreen = returnTo;
+        cleaningCartPanel.startQuest(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "CLEANING_CART_QUEST");
+    }
+
+    public void openDeskPuzzle(String clue, String returnTo) {
+        lastScreen = returnTo;
+        deskPuzzlePanel.startPuzzle(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "DESK_PUZZLE");
+    }
+
+    public void openLockerQuest(String clue, String returnTo) {
+        lastScreen = returnTo;
+        lockerQuestPanel.startQuest(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "LOCKER_QUEST");
+    }
+
+    public void openCabinetPuzzle(String clue, String returnTo) {
+        lastScreen = returnTo;
+        cabinetPuzzlePanel.startPuzzle(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "CABINET_PUZZLE");
+    }
+
+    public void openTerminalPuzzle(String clue, String returnTo) {
+        lastScreen = returnTo;
+        terminalPuzzleQuest.startQuest(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "TERMINAL_PUZZLE");
+    }
+
+    public void openJaredQuest(String clue, String returnTo) {
+        lastScreen = returnTo;
+        jaredPuzzleQuest.startQuest(clue, returnTo);
+
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+
+        setHudEnabled(false);
+        inventoryOpen = false;
+        cardLayout.show(container, "JARED_QUEST");
+    }
+
     public void openInventory() {
         inventoryPanel.open(lastScreen);
         cardLayout.show(container, "INVENTORY");
@@ -422,6 +548,10 @@ public class MainGame {
 
     public static MainGame getInstance() {
         return instance;
+    }
+
+    public JLayeredPane getRoot() {
+        return root;
     }
 
     public static void main(String[] args) {
