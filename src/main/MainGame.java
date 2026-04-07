@@ -12,6 +12,7 @@ import view.screens.Floor1Panel;
 import view.screens.Floor2Panel;
 import view.screens.IntroPanel;
 import view.screens.OutroPanel;
+import view.screens.SplashScreenPanel;
 import view.screens.InventoryPanel;
 import view.screens.LobbyPanel;
 import view.screens.MainMenuPanel;
@@ -53,6 +54,7 @@ public class MainGame {
     JaredPuzzleQuest jaredPuzzleQuest;
     IntroPanel introPanel;
     OutroPanel outroPanel;
+    SplashScreenPanel splashPanel;
     InventoryPanel inventoryPanel;
     GameHud hud;
     GameDialogPanel dialogPanel;
@@ -110,6 +112,7 @@ public class MainGame {
         jaredPuzzleQuest = new JaredPuzzleQuest();
         introPanel = new IntroPanel();
         outroPanel = new OutroPanel();
+        splashPanel = new SplashScreenPanel();
         inventoryPanel = new InventoryPanel();
         hud = new GameHud();
         hud.setBounds(offsetX, offsetY, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
@@ -137,6 +140,7 @@ public class MainGame {
         container.add(jaredPuzzleQuest, "JARED_QUEST");
         container.add(introPanel, "INTRO");
         container.add(outroPanel, "OUTRO");
+        container.add(splashPanel, "SPLASH");
         container.add(inventoryPanel, "INVENTORY");
 
         root.add(container, JLayeredPane.DEFAULT_LAYER);
@@ -146,8 +150,19 @@ public class MainGame {
         frame.setContentPane(root);
         frame.setVisible(true);
 
-        showMenu();
+        startSplash();
         installGlobalKeybinds();
+    }
+
+    private void startSplash() {
+        if (hud != null) {
+            hud.setVisible(false);
+            hud.setObjectivesVisible(false);
+        }
+        cardLayout.show(container, "SPLASH");
+        musicPlayer.playLoop(Assets.audio("intro.wav"));
+        musicPlayer.setVolume(1f);
+        splashPanel.start();
     }
 
     private void installGlobalKeybinds() {
