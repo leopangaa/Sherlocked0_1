@@ -74,7 +74,26 @@ public class LobbyPanel extends JPanel {
         inputBlocker.setOpaque(false);
         inputBlocker.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
         inputBlocker.setVisible(false);
-        inputBlocker.addMouseListener(new MouseAdapter() {});
+        inputBlocker.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Check if the click was outside the dialogueUI bounds
+                if (dialogueUI.isVisible() && !dialogueUI.getBounds().contains(e.getPoint())) {
+                    dialogueUI.setVisible(false);
+                    inputBlocker.setVisible(false);
+                    setButtonsEnabled(areaContainer, true);
+                    MainGame.getInstance().setHudEnabled(true);
+                }
+            }
+            @Override
+            public void mousePressed(MouseEvent e) {}
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        });
 
         dialogueUI.setVisibilityListener(visible -> {
             inputBlocker.setVisible(visible);
@@ -95,17 +114,33 @@ public class LobbyPanel extends JPanel {
         areaContainer.add(lobbyPartD, "D");
         areaContainer.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
 
-        add(liamQuestPanel, 0);
-        add(registerPuzzlePanel, 1);
-        add(dialogueUI, 2);
+        add(dialogueUI, 0);
+        add(liamQuestPanel, 1);
+        add(registerPuzzlePanel, 2);
         add(inputBlocker, 3);
         add(areaContainer, 4);
     }
 
     private void setButtonsEnabled(Container root, boolean enabled) {
         for (Component c : root.getComponents()) {
-            if (c instanceof AbstractButton) {
+            if (c instanceof AbstractButton || c instanceof JLabel) {
                 c.setEnabled(enabled);
+                // Reset state if disabling
+                if (!enabled) {
+                    if (c instanceof JLabel) {
+                        JLabel label = (JLabel) c;
+                        label.setBorder(null);
+                        Rectangle orig = (Rectangle) label.getClientProperty("originalBounds");
+                        if (orig != null) label.setBounds(orig);
+                    }
+                    if (c instanceof JButton) {
+                        JButton btn = (JButton) c;
+                        ImageIcon normal = (ImageIcon) btn.getClientProperty("normalIcon");
+                        Rectangle orig = (Rectangle) btn.getClientProperty("origBounds");
+                        if (normal != null) btn.setIcon(normal);
+                        if (orig != null) btn.setBounds(orig);
+                    }
+                }
             }
             if (c instanceof Container) {
                 setButtonsEnabled((Container) c, enabled);
@@ -188,12 +223,14 @@ public class LobbyPanel extends JPanel {
     }
 
     private void applyHoverEffectToLabel(JLabel label) {
-        final Rectangle originalBounds = label.getBounds();
+        label.putClientProperty("originalBounds", label.getBounds());
 
         label.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
+                if (!label.isEnabled()) return;
                 label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+                Rectangle originalBounds = (Rectangle) label.getClientProperty("originalBounds");
                 int newWidth = (int) Math.round(originalBounds.width * 1.08);
                 int newHeight = (int) Math.round(originalBounds.height * 1.08);
 
@@ -212,7 +249,9 @@ public class LobbyPanel extends JPanel {
             }
 
             public void mouseExited(MouseEvent evt) {
+                if (!label.isEnabled()) return;
                 label.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                Rectangle originalBounds = (Rectangle) label.getClientProperty("originalBounds");
                 label.setBounds(originalBounds);
                 label.setBorder(null);
                 label.repaint();
@@ -249,65 +288,6 @@ public class LobbyPanel extends JPanel {
                                 "Mrs. Vale looks exhausted. Her eyes are bloodshot, as if she hasn't slept in days."
                         })
                 );
-            }
-        });
-
-        // Mirror Hotspot
-        JLabel mirror = createClickableHotspotLabel(210, 110, 80, 140);
-        panel.add(mirror);
-        applyHoverEffectToLabel(mirror);
-        mirror.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                if (!mirror.isEnabled()) return;
-                showInteractionMenu("ORNATE MIRROR",
-                        null,
-                        () -> {
-                            String[] dialogue = {
-                                    "The mirror is covered in a thin layer of dust.",
-                                    "As you look closer, you notice something faint in the reflection.",
-                                    "It's a series of numbers written on the opposite wall, only visible from this angle.",
-                                    "[CLUE FOUND: Mirror reflection hint]"
-                            };
-                            startDialogue(dialogue, () -> {
-                                MainGame.getInstance().openPuzzle("Mirror reflection hint", "LOBBY", "EASY");
-                            });
-                        }
-                );
-            }
-        });
-
-        // Guest Register Hotspot
-        JLabel register = createClickableHotspotLabel(470, 275, 70, 40);
-        panel.add(register);
-        applyHoverEffectToLabel(register);
-        register.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                if (!register.isEnabled()) return;
-                showInteractionMenu("GUEST REGISTER",
-                        null,
-                        () -> {
-                            inputBlocker.setVisible(true);
-                            setButtonsEnabled(areaContainer, false);
-                            MainGame.getInstance().setHudEnabled(false);
-                            registerPuzzlePanel.startPuzzle();
-                        }
-                );
-            }
-        });
-
-        // Elevator Hotspot
-        JLabel elevator = createClickableHotspotLabel(650, 120, 100, 200);
-        panel.add(elevator);
-        applyHoverEffectToLabel(elevator);
-        elevator.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) {
-                if (!elevator.isEnabled()) return;
-                if (GameState.getInstance().lobbyComplete) {
-                    GameState.getInstance().setCurrentFloor(1);
-                    MainGame.getInstance().switchFloor("FLOOR1");
-                } else {
-                    startDialogue(new String[]{"The elevator is locked. You should finish your investigation here first."});
-                }
             }
         });
 
@@ -385,6 +365,7 @@ public class LobbyPanel extends JPanel {
         register.setCursor(new Cursor(Cursor.HAND_CURSOR));
         register.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
+                if (!register.isEnabled()) return;
                 showInteractionMenu("GUEST REGISTER", null, () -> {
                     if (!GameState.getInstance().hasClue("Guest Register entry")) {
                         String[] preDialogue = {
@@ -416,16 +397,19 @@ public class LobbyPanel extends JPanel {
 
         mirror.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
+                if (!mirror.isEnabled()) return;
                 showInteractionMenu("MIRROR", null, () -> {
                     String[] dialogue = {
                             "You look into the mirror...",
                             "Your reflection seems... delayed.",
                             "Wait, is that someone standing behind you?",
                             "You turn around, but no one is there.",
-                            "Looking back at the mirror, a faint message is scrawled on the glass: 'YOU ARE NOT ALONE'"
+                            "Looking back at the mirror, a faint message is scrawled on the glass: 'YOU ARE NOT ALONE'",
+                            "[CLUE FOUND: Mirror reflection hint]"
                     };
-                    startDialogue(dialogue);
-                    GameState.getInstance().addClue("Mirror reflection hint");
+                    startDialogue(dialogue, () -> {
+                        MainGame.getInstance().openPuzzle("Mirror reflection hint", "LOBBY", "EASY");
+                    });
                 });
             }
         });

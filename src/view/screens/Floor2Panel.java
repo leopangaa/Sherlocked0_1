@@ -37,7 +37,21 @@ public class Floor2Panel extends JPanel {
         inputBlocker.setOpaque(false);
         inputBlocker.setBounds(0, 0, UiScale.GAME_WIDTH, UiScale.GAME_HEIGHT);
         inputBlocker.setVisible(false);
-        inputBlocker.addMouseListener(new MouseAdapter() {});
+        inputBlocker.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (dialogueUI.isVisible() && !dialogueUI.getBounds().contains(e.getPoint())) {
+                    dialogueUI.setVisible(false);
+                    inputBlocker.setVisible(false);
+                    setButtonsEnabled(areaContainer, true);
+                    MainGame.getInstance().setHudEnabled(true);
+                }
+            }
+            @Override public void mousePressed(MouseEvent e) {}
+            @Override public void mouseReleased(MouseEvent e) {}
+            @Override public void mouseEntered(MouseEvent e) {}
+            @Override public void mouseExited(MouseEvent e) {}
+        });
 
         dialogueUI.setVisibilityListener(visible -> {
             inputBlocker.setVisible(visible);
@@ -65,6 +79,21 @@ public class Floor2Panel extends JPanel {
         for (Component c : root.getComponents()) {
             if (c instanceof AbstractButton || c instanceof JLabel) {
                 c.setEnabled(enabled);
+                if (!enabled) {
+                    if (c instanceof JLabel) {
+                        JLabel label = (JLabel) c;
+                        label.setBorder(null);
+                        Rectangle orig = (Rectangle) label.getClientProperty("originalBounds");
+                        if (orig != null) label.setBounds(orig);
+                    }
+                    if (c instanceof JButton) {
+                        JButton btn = (JButton) c;
+                        ImageIcon normal = (ImageIcon) btn.getClientProperty("normalIcon");
+                        Rectangle orig = (Rectangle) btn.getClientProperty("origBounds");
+                        if (normal != null) btn.setIcon(normal);
+                        if (orig != null) btn.setBounds(orig);
+                    }
+                }
             }
             if (c instanceof Container) {
                 setButtonsEnabled((Container) c, enabled);
@@ -96,13 +125,14 @@ public class Floor2Panel extends JPanel {
     }
 
     private void applyHoverEffectToLabel(JLabel label) {
-        final Rectangle originalBounds = label.getBounds();
+        label.putClientProperty("originalBounds", label.getBounds());
 
         label.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 if (!label.isEnabled()) return;
                 label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
+                Rectangle originalBounds = (Rectangle) label.getClientProperty("originalBounds");
                 int newWidth = (int) Math.round(originalBounds.width * 1.08);
                 int newHeight = (int) Math.round(originalBounds.height * 1.08);
 
@@ -121,7 +151,9 @@ public class Floor2Panel extends JPanel {
             }
 
             public void mouseExited(MouseEvent evt) {
+                if (!label.isEnabled()) return;
                 label.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                Rectangle originalBounds = (Rectangle) label.getClientProperty("originalBounds");
                 label.setBounds(originalBounds);
                 label.setBorder(null);
                 label.repaint();

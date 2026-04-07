@@ -24,6 +24,7 @@ public class DialogueUI extends JPanel {
     private int dialogueQueueIndex = 0;
     private Runnable onDialogueComplete;
     private Consumer<Boolean> visibilityListener;
+    private boolean isInteractionMenuOpen = false;
 
     public DialogueUI() {
         setLayout(null);
@@ -89,10 +90,7 @@ public class DialogueUI extends JPanel {
 
     private void refreshNow() {
         revalidate();
-        repaint(0, 0, getWidth(), getHeight());
-        if (isShowing()) {
-            paintImmediately(0, 0, getWidth(), getHeight());
-        }
+        repaint();
     }
 
     private void hideInteractionButtons() {
@@ -106,6 +104,11 @@ public class DialogueUI extends JPanel {
     }
 
     private void handleAdvanceClick() {
+        if (isInteractionMenuOpen) {
+            // If interaction menu is open, clicks on the dialogue box itself should not advance/close it.
+            return;
+        }
+
         if (typewriterTimer != null && typewriterTimer.isRunning()) {
             typewriterTimer.stop();
             dialogueBox.setText(currentFullText);
@@ -148,6 +151,7 @@ public class DialogueUI extends JPanel {
     }
 
     public void startDialogue(String[] dialogue, Runnable onComplete) {
+        isInteractionMenuOpen = false;
         setVisible(true);
         hideInteractionButtons();
         if (hideTimer != null && hideTimer.isRunning()) {
@@ -211,6 +215,7 @@ public class DialogueUI extends JPanel {
     }
 
     public void showInteractionMenu(String title, Runnable talkAction, Runnable examineAction) {
+        isInteractionMenuOpen = true;
         setVisible(true);
         typeText("Interacting with: " + title, false);
         
@@ -221,6 +226,7 @@ public class DialogueUI extends JPanel {
         if (talkAction != null) {
             talkBtn.setVisible(true);
             talkBtn.addActionListener(e -> {
+                isInteractionMenuOpen = false; // Close menu on button click
                 talkBtn.setVisible(false);
                 examineBtn.setVisible(false);
                 talkAction.run();
@@ -233,6 +239,7 @@ public class DialogueUI extends JPanel {
         if (examineAction != null) {
             examineBtn.setVisible(true);
             examineBtn.addActionListener(e -> {
+                isInteractionMenuOpen = false; // Close menu on button click
                 talkBtn.setVisible(false);
                 examineBtn.setVisible(false);
                 examineAction.run();

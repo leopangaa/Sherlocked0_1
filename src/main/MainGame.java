@@ -521,10 +521,10 @@ public class MainGame {
             musicPlayer.playLoop(Assets.audio("lobby.wav"));
         } else if ("FLOOR1".equals(floorName)) {
             GameState.getInstance().setCurrentFloor(1);
-            musicPlayer.playLoop(Assets.audio("floor1.wav"));
+            musicPlayer.playLoop(Assets.audio("lobby.wav"));
         } else if ("FLOOR2".equals(floorName)) {
             GameState.getInstance().setCurrentFloor(2);
-            musicPlayer.playLoop(Assets.audio("floor2.wav"));
+            musicPlayer.playLoop(Assets.audio("lobby.wav"));
         }
     }
 
@@ -548,6 +548,10 @@ public class MainGame {
 
     public static MainGame getInstance() {
         return instance;
+    }
+
+    public GameDialogPanel getDialogPanel() {
+        return dialogPanel;
     }
 
     public JLayeredPane getRoot() {
