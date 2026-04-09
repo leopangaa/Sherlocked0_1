@@ -1,13 +1,15 @@
 package core;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class GameState {
+public class GameState implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static GameState instance;
     
     public int currentFloor;
     public ArrayList<String> clues;
-    private ArrayList<Runnable> listeners;
+    private transient ArrayList<Runnable> listeners;
     
     // Floor completion status
     public boolean lobbyComplete;
@@ -40,17 +42,44 @@ public class GameState {
         return instance;
     }
 
+    /**
+     * Updates the singleton instance with data from a loaded state.
+     * @param loadedState The state loaded from a file.
+     */
+    public void loadFrom(GameState loadedState) {
+        if (loadedState == null) return;
+        
+        this.currentFloor = loadedState.currentFloor;
+        this.clues = new ArrayList<>(loadedState.clues);
+        this.lobbyComplete = loadedState.lobbyComplete;
+        this.floor1Complete = loadedState.floor1Complete;
+        this.floor2Complete = loadedState.floor2Complete;
+        this.floor3Complete = loadedState.floor3Complete;
+        this.floor4Complete = loadedState.floor4Complete;
+        this.floor5Complete = loadedState.floor5Complete;
+        this.floor6Complete = loadedState.floor6Complete;
+        this.rooftopComplete = loadedState.rooftopComplete;
+        
+        notifyListeners();
+    }
+
     public void addListener(Runnable listener) {
+        if (listeners == null) {
+            listeners = new ArrayList<>();
+        }
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
     }
 
     public void removeListener(Runnable listener) {
-        listeners.remove(listener);
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
     }
 
     private void notifyListeners() {
+        if (listeners == null) return;
         for (Runnable r : new ArrayList<>(listeners)) {
             r.run();
         }

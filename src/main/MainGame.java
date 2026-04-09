@@ -2,6 +2,7 @@ package main;
 
 import controller.MusicPlayer;
 import core.GameState;
+import core.SaveManager;
 import utils.Assets;
 import utils.UiScale;
 import utils.TTSManager;
@@ -235,7 +236,20 @@ public class MainGame {
     }
 
     public void continueGame() {
-        dialogPanel.showMessage("Continue", "No saved game yet.", null);
+        if (SaveManager.hasSaveFile()) {
+            if (SaveManager.loadGame()) {
+                GameState gs = GameState.getInstance();
+                String floorName = "LOBBY";
+                if (gs.currentFloor == 1) floorName = "FLOOR1";
+                else if (gs.currentFloor == 2) floorName = "FLOOR2";
+                
+                switchFloor(floorName);
+            } else {
+                dialogPanel.showMessage("Error", "Could not load save file.", null);
+            }
+        } else {
+            dialogPanel.showMessage("Continue", "No saved game found.", null);
+        }
     }
 
     public void openSettings() {
@@ -265,8 +279,11 @@ public class MainGame {
 
         optionsBtn.addActionListener(e -> openOptions());
         saveExitBtn.addActionListener(e -> {
-
-            dialogPanel.showMessage("Save", "Game saved. Returning to menu...", () -> showMenu());
+            if (SaveManager.saveGame()) {
+                dialogPanel.showMessage("Save", "Game saved. Returning to menu...", () -> showMenu());
+            } else {
+                dialogPanel.showMessage("Error", "Could not save game.", null);
+            }
         });
         backBtn.addActionListener(e -> dialogPanel.setVisible(false));
 
@@ -553,9 +570,14 @@ public class MainGame {
 
         state.currentFloor = 0;
         state.clues.clear();
+        state.lobbyComplete = false;
         state.floor1Complete = false;
         state.floor2Complete = false;
-
+        state.floor3Complete = false;
+        state.floor4Complete = false;
+        state.floor5Complete = false;
+        state.floor6Complete = false;
+        state.rooftopComplete = false;
     }
 
     public void setHudEnabled(boolean enabled) {
