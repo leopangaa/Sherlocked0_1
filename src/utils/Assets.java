@@ -1,30 +1,52 @@
 package utils;
 
 import java.io.File;
+import java.net.URISyntaxException;
 
 public final class Assets {
-    private static final String ROOT = "src/assets";
-    private static final String IMAGES = ROOT + "/images";
-    private static final String SOUNDS = ROOT + "/sounds";
 
-    private Assets() {
+    private Assets() {}
+
+    // Get the folder where the jar/exe is located
+    private static File baseDir() {
+        try {
+            File jarFile = new File(
+                    Assets.class.getProtectionDomain()
+                            .getCodeSource()
+                            .getLocation()
+                            .toURI()
+            );
+
+            return jarFile.isFile() ? jarFile.getParentFile() : jarFile;
+        } catch (URISyntaxException e) {
+            return new File(".");
+        }
+    }
+
+    private static File assetsDir() {
+        return new File(baseDir(), "assets");
     }
 
     public static String img(String name) {
-        String[] candidates = {
-            IMAGES + "/backgrounds/" + name,
-            IMAGES + "/characters/" + name,
-            IMAGES + "/ui/" + name,
-            IMAGES + "/" + name
+        File root = new File(assetsDir(), "images");
+
+        File[] candidates = {
+                new File(root, "backgrounds/" + name),
+                new File(root, "characters/" + name),
+                new File(root, "ui/" + name),
+                new File(root, name)
         };
-        for (String p : candidates) {
-            if (new File(p).exists()) return p;
+
+        for (File f : candidates) {
+            if (f.exists()) return f.getAbsolutePath();
         }
-        return candidates[0];
+
+        // fallback (still return first path for debugging)
+        return candidates[0].getAbsolutePath();
     }
 
     public static String audio(String name) {
-        String p = SOUNDS + "/" + name;
-        return new File(p).exists() ? p : p;
+        File f = new File(assetsDir(), "sounds/" + name);
+        return f.getAbsolutePath();
     }
 }
